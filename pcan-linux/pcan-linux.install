@@ -1,0 +1,22 @@
+# arg 1:  the new package version
+# arg 2:  the old package version
+
+
+post_install () {
+  /sbin/depmod
+  /sbin/udevadm control --reload-rules
+  echo "Be sure to validate the options in /etc/modprobe.d/pcan"
+  echo " and run 'modprobe pcan' to load the module."
+}
+
+post_upgrade() {
+  /sbin/depmod
+  /sbin/udevadm control --reload-rules
+  echo "Be sure to validate the options in /etc/modprobe.d/pcan"
+  echo " and run 'modprobe pcan' to load the module."
+}
+
+op=$1
+shift
+
+$op $*

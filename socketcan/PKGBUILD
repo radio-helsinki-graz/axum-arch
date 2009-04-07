@@ -1,0 +1,54 @@
+pkgname=socketcan
+pkgver=963
+pkgrel=1
+pkgdesc="SocketCAN kernel driver and userspace applications"
+url="http://socketcan.berlios.net/"
+install=socketcan.install
+arch=(i686)
+license=('GPL')
+
+_svntrunk=svn://svn.berlios.de/socketcan/trunk
+
+kernsource="/home/stage/arch/kernel26/src/linux-2.6.28"
+kernversion=2.6.28-ARCH
+install_location="/lib/modules/${kernversion}/socketcan"
+
+source=()
+
+build() {
+  # Fetch sources from subversion
+  cd $srcdir
+  if [ -d socketcan-svn/.svn ]; then
+    (cd socketcan-svn && svn up -r $pkgver && svn revert -R .)
+  else
+    svn checkout -r $pkgver $_svntrunk socketcan-svn
+  fi
+
+  #sed -i 's/export CONFIG_CAN_DEV=m/#export CONFIG_CAN_DEV=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_SJA1000=m/#export CONFIG_CAN_SJA1000=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_SJA1000_PLATFORM=m/#export CONFIG_CAN_SJA1000_PLATFORM=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_EMS_PCI=m/#export CONFIG_CAN_EMS_PCI=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_EMS_PCMCIA=m/#export CONFIG_CAN_EMS_PCMCIA=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_PIPCAN=m/#export CONFIG_CAN_PIPCAN=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_SOFTING=m/#export CONFIG_CAN_SOFTING=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_SOFTING_CS=m/#export CONFIG_CAN_SOFTING_CS=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_MCP251X=m/#export CONFIG_CAN_MCP251X=m/' socketcan-svn/kernel/2.6/Makefile
+  sed -i 's/export CONFIG_CAN_ISOTP=m/#export CONFIG_CAN_ISOTP=m/' socketcan-svn/kernel/2.6/Makefile
+
+  # compile/install driver
+  cd socketcan-svn/kernel/2.6
+  make KERNELDIR=$kernsource clean modules || return 1
+  mkdir -p $pkgdir$install_location
+  find -name \*.ko | xargs install -t $pkgdir$install_location
+  # assume the can header files to be installed by the kernel-headers package
+
+  # compile/install can-utils
+  cd ../../can-utils
+  make clean
+  make || return 1
+  mkdir -p $pkgdir/usr/bin
+  install -t $pkgdir/usr/bin asc2log canbusload candump cangen\
+    canlogserver canplayer cansend cansniffer isotpdump isotprecv\
+    isotpsend isotpsniffer log2asc log2long slcan_attach vcan
+}
+

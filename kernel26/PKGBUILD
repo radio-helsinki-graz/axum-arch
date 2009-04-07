@@ -1,0 +1,126 @@
+pkgname=kernel2628-ARCH
+pkgver=2.6.28
+pkgrel=5
+pkgdesc="The Linux Kernel 2.6.28 with geode support"
+url="http://www.kernel.org"
+depends=('module-init-tools')
+install=kernel26.install
+arch=(i686 x86_64)
+license=('GPL')
+
+##### add any patch sources to this section
+source=(ftp://ftp.nl.kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2 config pci2040.patch)
+
+# Function to grab var from src
+getvar() {
+  old=$(cat Makefile | grep "^$1")
+  echo $(echo ${old/"$1 ="/} | sed -e "s/[ ]*\(.*\)[ ]*/\1/g")
+  return 0
+}
+
+build() {
+  cd $srcdir/linux-$pkgver
+
+  ##### Uncomment and apply any patches here
+  patch -Np1 -i ../pci2040.patch
+
+  # get rid of the 'i' in i686
+  carch=`echo $CARCH | sed 's|i||'`
+  cat ../config | sed "s|#CARCH#|$carch|g" >./.config
+
+  ##### Load config - uncomment your preferred config method
+  #yes "" | make config
+  #make oldconfig || return 1
+  make menuconfig
+  #make xconfig
+  #make gconfig
+
+  ##### NO USER CHANGES BELOW HERE #####
+
+  # save the current pkgname
+  old_pkgname=$pkgname
+
+  # set pkgname for build purposes - DO NOT alter!
+  pkgname=kernel26
+
+  # save the updated config to build with today's date
+  cp ./.config $startdir/config-$(date +%b%d\-%Hh)
+
+  # get EXTRAVERSION from Makefile to create a unique pkgname and /usr/src directory
+  _kernextra=$(getvar "EXTRAVERSION")
+  # grab the 2.6.x.y version suffix from pkgver
+  _y="`echo $pkgver | cut --delim "." --fields 4`"
+  # remove .y version suffix from _kernextra
+  _kernextra="`echo $_kernextra | sed "s|\.$_y||g"`"
+
+  # Read the full kernel version info from new config to use in pathnames and pkgname
+  . ./.config
+
+  # Kernel custom - to create a unique pkgname (see below)
+  _kerncust="${_kernextra}${CONFIG_LOCALVERSION}"
+  # Kernel release - will be the same as Makefile
+  _kernrel="${pkgver}${_kerncust}"
+  # Get the pkgver suffix for unique pkgname and /boot file suffices
+  _pkgversuf="`echo $pkgver | sed "s|2.6.||g" | sed "s|\.||g"`"
+  # Set /boot file suffices from kernel release and pkgver suffix
+  _kernboot="${_pkgversuf}${_kerncust}"
+
+  # Set a new pkgname from  kernel release and pkgver suffix
+  pkgname="${pkgname}${_pkgversuf}${_kerncust}"
+
+  # build!
+  echo
+  echo -n "Do you want to make clean (default YES)? (YES/NO): "
+  read choice
+  echo
+  echo -n "Press any key to start make or CTRL+C to quit"
+  read anykey
+
+  if [ "${choice}" = "NO" ] ; then
+        make bzImage modules || return 1
+  else
+        make clean bzImage modules || return 1
+  fi
+
+  mkdir -p $pkgdir/{lib/modules,boot}
+  make INSTALL_MOD_PATH=$pkgdir modules_install || return 1
+  cp System.map $pkgdir/boot/System.map26${_kernboot}
+  cp arch/i386/boot/bzImage $pkgdir/boot/vmlinuz26${_kernboot}
+  install -D -m644 Makefile \
+    $pkgdir/usr/src/linux-${_kernrel}/Makefile
+  install -D -m644 kernel/Makefile \
+    $pkgdir/usr/src/linux-${_kernrel}/kernel/Makefile
+  install -D -m644 .config \
+    $pkgdir/usr/src/linux-${_kernrel}/.config
+  install -D -m644 .kernelrelease \
+    $pkgdir/usr/src/linux-${_kernrel}/.kernelrelease
+  install -D -m644 .config $pkgdir/boot/kconfig26${_kernboot}
+  mkdir -p $pkgdir/usr/src/linux-${_kernrel}/include
+  mkdir -p $pkgdir/usr/src/linux-${_kernrel}/arch/i386/kernel
+  for i in acpi asm-generic asm-i386 config linux math-emu media net pcmcia scsi sound video; do
+    cp -a include/$i $pkgdir/usr/src/linux-${_kernrel}/include/
+  done
+  # copy files necessary for later builds, like nvidia and vmware
+  cp Module.symvers $pkgdir/usr/src/linux-${_kernrel}
+  cp -a scripts $pkgdir/usr/src/linux-${_kernrel}
+  mkdir -p $pkgdir/usr/src/linux-${_kernrel}/.tmp_versions
+  cp arch/i386/Makefile $pkgdir/usr/src/linux-${_kernrel}/arch/i386/
+  cp arch/i386/Makefile.cpu $pkgdir/usr/src/linux-${_kernrel}/arch/i386/
+  cp arch/i386/kernel/asm-offsets.s \
+    $pkgdir/usr/src/linux-${_kernrel}/arch/i386/kernel/
+  # copy in Kconfig files
+  for i in `find . -name "Kconfig*"`; do
+    mkdir -p $pkgdir/usr/src/linux-${_kernrel}/`echo $i | sed 's|/Kconfig.*||'`
+    cp $i $pkgdir/usr/src/linux-${_kernrel}/$i
+  done
+  cd $pkgdir/usr/src/linux-${_kernrel}/include && ln -s asm-i386 asm
+  chown -R root.root $pkgdir/usr/src/linux-${_kernrel}
+  cd $pkgdir/lib/modules/${_kernrel} && \
+    (rm -f source build; ln -sf /usr/src/linux-${_kernrel} build)
+
+  # Correct the pkgname in our PKGBUILD - this allows correct gensync operation
+  # NOTE: pkgname variable must be declared with first 10 lines of PKGBUILD!
+  cd $startdir
+  sed -i "1,11 s|pkgname=$old_pkgname|pkgname=$pkgname|" ./PKGBUILD
+}
+# vim:syntax=sh
