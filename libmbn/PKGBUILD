@@ -1,0 +1,32 @@
+pkgname=libmbn
+pkgver=1
+pkgrel=1
+pkgdesc="MambaNet C Library"
+url="git@192.168.0.9:mbn.git"
+arch=(i686)
+license=('GPL')
+
+source=()
+
+build() {
+  # Fetch sources from git
+  cd $srcdir
+  if [ -d mbn/.git ]; then
+    (cd mbn && git pull "$url" master && git reset --hard)
+  else
+    git clone "$url" mbn
+  fi
+
+  # Make (default config)
+  cd mbn
+  make config
+  make
+
+
+  # Install
+  install -m 755 -d $pkgdir/usr/lib
+  install -m 755 -d $pkgdir/usr/include
+  install -m 644 src/libmbn.so $pkdir/usr/lib
+  install -m 644 src/mbn.h $pkgdir/usr/include/mbn.h
+}
+
