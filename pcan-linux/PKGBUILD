@@ -1,28 +1,31 @@
 pkgname=pcan-linux
 pkgver=6.9b
-pkgrel=2
+pkgrel=3
 pkgdesc="Linux netdev drivers for the PEAK ISA card"
 url="http://www.peak-system.com/linux/"
 install=pcan-linux.install
 arch=(i686)
 license=('GPL')
 
-kernsource="/home/stage/arch/kernel26/src/linux-2.6.28"
+kernsource=`cd ../kernel26/src/linux-2.6.28; pwd`
 kernversion=2.6.28-ARCH
 install_location="/lib/modules/${kernversion}/misc"
-
-makeopts="KERNEL_LOCATION=$kernsource PCI=NO_PCI_SUPPORT DNG=NO_DONGLE_SUPPORT PCC=NO_PCCARD_SUPPORT NET=NETDEV_SUPPORT DBG=DEBUG"
+makeopts="KERNEL_LOCATION=$kernsource USB=NO_USB_SUPPORT PAR=NO_PARPORT_SUBSYSTEM PCI=NO_PCI_SUPPORT DNG=NO_DONGLE_SUPPORT PCC=NO_PCCARD_SUPPORT NET=NETDEV_SUPPORT"
 
 source=(http://www.peak-system.com/fileadmin/media/linux/files/peak-linux-driver.$pkgver.tar.gz)
 
 build() {
+  if [ ! -d ${kernsource} ]; then
+    echo "Kernel source not found, make sure to 'makepkg' kernel26!";
+    return 1
+  fi
+
   cd $srcdir/peak-linux-driver-$pkgver/driver
   make $makeopts clean
   make $makeopts || return 1
 
   # our own install, because the one provided with the Makefile
   # doesn't work in this environment
-  
   mkdir -p $pkgdir${install_location}
   install -m 644 pcan.ko $pkgdir${install_location}
 
@@ -30,33 +33,9 @@ build() {
   echo "# Uncomment the following line to set the module options" >> $pkgdir/etc/modprobe.d/pcan
   echo "options pcan type=isa irq=3 io=0x300 bitrate=0x0014" >> $pkgdir/etc/modprobe.d/pcan
   echo "install pcan /sbin/modprobe --ignore-install pcan" >> $pkgdir/etc/modprobe.d/pcan
-
-  mkdir -p $pkgdir/etc/udev/rules.d
-  install -m 644 udev/45-pcan.rules $pkgdir/etc/udev/rules.d
   
   mkdir -p $pkgdir/usr/include
   install -m 644 pcan.h $pkgdir/usr/include
-
-  mkdir -p $pkgdir/usr/bin
-  install -m 744 pcan_make_devices $pkgdir/usr/bin
-
-  # library
-  cd ../lib
-  make clean
-  make
-  mkdir -p $pkgdir/usr/lib
-  install -m 644 libpcan.h $pkgdir/usr/include
-  install -m 644 libpcan.so.0.6 $pkgdir/usr/lib
-  ln -s libpcan.so.0.6 $pkgdir/usr/lib/libpcan.so
-
-  # test programs
-  cd ../test
-  make clean
-  make
-  install -m 755 receivetest $pkgdir/usr/bin/pcan-receivetest
-  install -m 755 filtertest $pkgdir/usr/bin/pcan-filtertest
-  install -m 755 transmitest $pkgdir/usr/bin/pcan-transmitest
-  install -m 755 bitratetest $pkgdir/usr/bin/pcan-bitratetest
 }
 
 
