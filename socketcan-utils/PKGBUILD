@@ -1,0 +1,30 @@
+pkgname=socketcan-utils
+pkgver=963
+pkgrel=2
+pkgdesc="SocketCAN userspace applications"
+url="http://socketcan.berlios.net/"
+arch=(i686)
+license=('GPL')
+
+source=()
+_svntrunk=svn://svn.berlios.de/socketcan/trunk
+
+build() {
+  # Fetch sources from subversion
+  cd $srcdir
+  if [ -d socketcan-svn/.svn ]; then
+    (cd socketcan-svn && svn up -r $pkgver && svn revert -R .)
+  else
+    svn checkout -r $pkgver $_svntrunk socketcan-svn
+  fi
+
+  # compile/install can-utils
+  cd socketcan-svn/can-utils
+  make clean
+  make || return 1
+  mkdir -p $pkgdir/usr/bin
+  install -t $pkgdir/usr/bin asc2log canbusload candump cangen\
+    canlogserver canplayer cansend cansniffer isotpdump isotprecv\
+    isotpsend isotpsniffer log2asc log2long slcan_attach vcan
+}
+
