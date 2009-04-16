@@ -22,11 +22,10 @@ build() {
   make config
   make
 
-
   # Install
   install -m 755 -d $pkgdir/usr/lib
   install -m 755 -d $pkgdir/usr/include
-  install -m 644 src/libmbn.so $pkdir/usr/lib
+  install -m 644 src/libmbn.so $pkgdir/usr/lib/libmbn.so
   install -m 644 src/mbn.h $pkgdir/usr/include/mbn.h
 }
 
