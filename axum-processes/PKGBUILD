@@ -1,0 +1,74 @@
+pkgname=axum-processes
+pkgver=git
+pkgrel=3
+pkgdesc="Axum Linux Processes"
+url="http://192.168.0.9/"
+arch=(i686)
+license=('GPL')
+
+source=(http://www.cpan.org/authors/id/M/ML/MLEHMANN/JSON-XS-2.232.tar.gz http://oss.metaparadigm.com/json-c/json-c-0.8.tar.gz)
+gitroot="git@192.168.0.9:"
+
+build() {
+  # JSON::XS (required for address server client)
+  cd $srcdir/JSON-XS-2.232
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor || return 1
+  make || return 1
+  make install DESTDIR=$pkgdir || return 1
+
+
+  # JSON-C (required by address server)
+  cd $srcdir/json-c-0.8
+  ./configure --prefix=/usr || return 1
+  make || return 1
+  make DESTDIR=$pkgdir install || return 1
+
+
+  # libmbn, required by all processes
+  cd $srcdir
+  if [ -d mbn/.git ]; then
+    (cd mbn && git pull "${gitroot}mbn-lib.git" master && git reset --hard)
+  else
+    git clone "${gitroot}mbn-lib.git" mbn
+  fi
+
+  cd mbn
+  make config
+  make || return 1
+
+  install -m 755 -d $pkgdir/usr/lib
+  install -m 755 -d $pkgdir/usr/include
+  install -m 644 src/libmbn.so $pkgdir/usr/lib/libmbn.so
+  install -m 644 src/mbn.h $pkgdir/usr/include/mbn.h
+
+
+  # address server
+  cd $srcdir
+  if [ -d addr/.git ]; then
+    (cd addr && git pull "${gitroot}axum-address.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-address.git" addr
+  fi
+
+  cd addr
+  make || return 1
+
+  install -m 755 -d $pkgdir/usr/bin
+  install -m 755 axum-address $pkgdir/usr/bin/axum-address
+  install -m 755 client.pl $pkgdir/usr/bin/addrclient
+
+
+  # gateway
+  cd $srcdir
+  if [ -d gw/.git ]; then
+    (cd gw && git pull "${gitroot}axum-gateway.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-gateway.git" gw
+  fi
+
+  cd gw
+  make || return 1
+  install -m 755 -d $pkgdir/usr/bin
+  install -m 755 axum-gateway $pkgdir/usr/bin/axum-gateway
+}
+
