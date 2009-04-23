@@ -8,7 +8,7 @@ PID=`pidof -o %PPID /usr/bin/axum-gateway`
 case "$1" in
   start)
     stat_busy "Starting Axum Gateway"
-    [ -z "$PID" ] && (/usr/bin/axum-gateway ${AXUMGATEWAYARGS} &)
+    [ -z "$PID" ] && /usr/bin/axum-gateway ${AXUMGATEWAYARGS}
     if [ $? -gt 0 ]; then
       stat_fail
     else

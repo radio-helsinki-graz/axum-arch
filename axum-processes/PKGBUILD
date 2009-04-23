@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=5
+pkgrel=6
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
