@@ -1,0 +1,17 @@
+pkgname=json-c
+pkgver=0.8
+pkgrel=1
+pkgdesc="JSON-C library"
+url="http://oss.metaparadigm.com/json-c/"
+arch=(i686)
+license=('GPL')
+
+source=(http://oss.metaparadigm.com/json-c/json-c-${pkgver}.tar.gz)
+
+build() {
+  cd "$srcdir/json-c-0.8"
+  ./configure --prefix=/usr || return 1
+  make || return 1
+  make DESTDIR="$pkgdir" install || return 1
+}
+

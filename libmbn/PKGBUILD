@@ -1,0 +1,28 @@
+pkgname=libmbn
+pkgver=git
+pkgrel=1
+pkgdesc="MambaNet Library"
+url="http://192.168.0.9/mbn-lib.git/"
+arch=(i686)
+license=('GPL')
+
+gitroot="git@192.168.0.9:"
+
+build() {
+  cd "$srcdir"
+  if [ -d mbn/.git ]; then
+    (cd mbn && git pull "${gitroot}mbn-lib.git" master && git reset --hard)
+  else
+    git clone "${gitroot}mbn-lib.git" mbn
+  fi
+
+  cd mbn
+  make config
+  make || return 1
+
+  install -m 755 -d "$pkgdir/usr/lib"
+  install -m 755 -d "$pkgdir/usr/include"
+  install -m 644 src/libmbn.so "$pkgdir/usr/lib/libmbn.so"
+  install -m 644 src/mbn.h "$pkgdir/usr/include/mbn.h"
+}
+
