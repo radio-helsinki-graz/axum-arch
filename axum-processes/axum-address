@@ -13,7 +13,7 @@ case "$1" in
       stat_fail
     else
       echo $PID > /var/run/axum-address.pid
-      add_daemon axum-addr
+      add_daemon axum-address
       stat_done
     fi
     ;;
@@ -24,7 +24,7 @@ case "$1" in
       stat_fail
     else
       rm -f /var/run/axum-address.pid
-      rm_daemon axum-addr
+      rm_daemon axum-address
       stat_done
     fi
     ;;
