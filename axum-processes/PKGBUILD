@@ -9,7 +9,7 @@ backup=(etc/conf.d/axum.conf)
 license=('GPL')
 
 source=(\
-  axum-gateway axum-addr axum.conf\
+  axum-gateway axum-address axum.conf\
   http://www.cpan.org/authors/id/M/ML/MLEHMANN/JSON-XS-2.232.tar.gz\
   http://www.cpan.org/authors/id/R/RC/RCAPUTO/POE-1.005.tar.gz\
   http://www.cpan.org/authors/id/K/KJ/KJALB/TermReadKey-2.14.tar.gz\
