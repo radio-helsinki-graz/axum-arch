@@ -19,6 +19,10 @@ getvar() {
 }
 
 build() {
+  # temporarily "remove" our git repo, so the kernel version is correct
+  mv $startdir/../.git $startdir/../git
+
+
   cd $srcdir/linux-$pkgver
 
   ##### Uncomment and apply any patches here
@@ -122,5 +126,8 @@ build() {
   # NOTE: pkgname variable must be declared with first 10 lines of PKGBUILD!
   cd $startdir
   sed -i "1,11 s|pkgname=$old_pkgname|pkgname=$pkgname|" ./PKGBUILD
+
+  # re-add git dir
+  mv $startdir/../git $startdir/../.git
 }
 # vim:syntax=sh
