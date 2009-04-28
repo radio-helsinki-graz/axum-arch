@@ -1,0 +1,62 @@
+pkgname=qt
+pkgver=4.5.1
+pkgrel=1
+pkgdesc='Qt library optimized for the AXUM'
+arch=('i686')
+license=('GPL3' 'LGPL')
+depends=('libpng' 'zlib' 'sqlite3')
+provides=("qt=${pkgver}" "qt4=${pkgver}")
+conflicts=('qt4' 'qt')
+
+source=("ftp://ftp.qtsoftware.com/qt/source/qt-embedded-linux-opensource-src-$pkgver.tar.gz")
+
+build() {
+  cd "$srcdir/qt-embedded-linux-opensource-src-$pkgver"
+  ./configure -fast -silent \
+    -confirm-license \
+    -opensource \
+    -no-largefile \
+    -no-accessibility \
+    -plugin-sql-sqlite \
+    -system-sqlite \
+    -no-qt3support \
+    -no-phonon \
+    -no-xmlpatterns \
+    -no-svg \
+    -webkit \
+    -no-scripttools \
+    -system-zlib \
+    -no-gif \
+    -no-libtiff \
+    -system-libpng \
+    -no-libmng \
+    -no-libjpeg \
+    -no-openssl \
+    -nomake examples \
+    -nomake demos \
+    -nomake docs \
+    -nomake translations \
+    -no-nis \
+    -no-cups \
+    -no-iconv \
+    -no-glib \
+    -no-dbus \
+    -qt-freetype \
+    -depths 16 \
+    -no-opengl \
+    -qt-gfx-linuxfb \
+    -no-separate-debug-info \
+    -optimized-qmake \
+    -reduce-relocations \
+    -prefix /usr \
+    -sysconfdir /etc \
+    -plugindir /usr/lib/qt/plugins \
+    -translationdir /usr/share/qt/translations \
+    -datadir /usr/share/qt \
+    -docdir /usr/share/doc/qt \
+    -examplesdir /usr/share/doc/qt/examples \
+    -demosdir /usr/share/doc/qt/demos
+
+  make
+  make INSTALL_ROOT="$pkgdir" install
+}
