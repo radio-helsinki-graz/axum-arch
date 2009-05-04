@@ -1,6 +1,6 @@
 pkgname=pcan-linux
 pkgver=6.9b
-pkgrel=3
+pkgrel=4
 pkgdesc="Linux netdev drivers for the PEAK ISA card"
 url="http://www.peak-system.com/linux/"
 install=pcan-linux.install
@@ -33,6 +33,7 @@ build() {
   echo "# Uncomment the following line to set the module options" >> $pkgdir/etc/modprobe.d/pcan
   echo "options pcan type=isa irq=3 io=0x300 bitrate=0x0014" >> $pkgdir/etc/modprobe.d/pcan
   echo "install pcan /sbin/modprobe --ignore-install pcan" >> $pkgdir/etc/modprobe.d/pcan
+  echo "alias can0 pcan" >> $pkgdir/etc/modprobe.d/pcan
   
   mkdir -p $pkgdir/usr/include
   install -m 644 pcan.h $pkgdir/usr/include
