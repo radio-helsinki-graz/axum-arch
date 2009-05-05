@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=9
+pkgrel=10
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -72,6 +72,7 @@ build() {
 
   # Arch scripts & config
   install -m 755 -d "$pkgdir/etc/rc.d"
+  install -m 755 -d "$pkgdir/var/lib/axum"
   install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 -d "$pkgdir/etc/conf.d"
