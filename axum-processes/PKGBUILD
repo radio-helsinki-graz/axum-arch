@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=10
+pkgrel=11
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -40,6 +40,16 @@ build() {
   find "${pkgdir}" -name .packlist -delete
 
 
+  # Arch scripts & config
+  install -m 755 -d "$pkgdir/etc/rc.d"
+  install -m 755 -d "$pkgdir/var/lib/axum"
+  install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
+  install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
+  install -m 755 -d "$pkgdir/etc/conf.d"
+  install -m 644 "$startdir/axum.conf" "$pkgdir/etc/conf.d/axum.conf"
+  install -m 755 -d "$pkgdir/usr/bin"
+
+
   # address server
   cd "$srcdir"
   if [ -d addr/.git ]; then
@@ -51,7 +61,6 @@ build() {
   cd addr
   make || return 1
 
-  install -m 755 -d "$pkgdir/usr/bin"
   install -m 755 axum-address "$pkgdir/usr/bin/axum-address"
   install -m 755 client.pl "$pkgdir/usr/bin/addrclient"
 
@@ -66,16 +75,21 @@ build() {
 
   cd gw
   make || return 1
-  install -m 755 -d "$pkgdir/usr/bin"
   install -m 755 axum-gateway "$pkgdir/usr/bin/axum-gateway"
 
 
-  # Arch scripts & config
-  install -m 755 -d "$pkgdir/etc/rc.d"
-  install -m 755 -d "$pkgdir/var/lib/axum"
-  install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
-  install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
-  install -m 755 -d "$pkgdir/etc/conf.d"
-  install -m 644 "$startdir/axum.conf" "$pkgdir/etc/conf.d/axum.conf"
+  # engine
+  cd $srcdir
+  if [ -d en/.git ]; then
+    (cd en && git pull "${gitroot}axum-engine.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-engine.git" en
+  fi
+
+  cd en
+  make || return 1
+  install -m 755 axum-engine "$pkgdir/usr/bin/axum-engine"
+  install -m 755 -d "$pkgdir/var/lib/axum/dsp"
+  install -m 644 -t "$pkgdir/var/lib/axum/dsp" dsp/*
 }
 
