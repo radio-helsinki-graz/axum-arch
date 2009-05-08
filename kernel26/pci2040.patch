@@ -1,22 +1,22 @@
 diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 2f557f5..b190637 100644
+index 00cf955..aed3320 100644
 --- a/drivers/Kconfig
 +++ b/drivers/Kconfig
-@@ -107,4 +107,6 @@ source "drivers/uio/Kconfig"
- source "drivers/xen/Kconfig"
- 
+@@ -109,4 +109,6 @@ source "drivers/xen/Kconfig"
  source "drivers/staging/Kconfig"
+ 
+ source "drivers/platform/Kconfig"
 +
 +source "drivers/pci2040/Kconfig"
  endmenu
 diff --git a/drivers/Makefile b/drivers/Makefile
-index fceb71a..0757910 100644
+index c1bf417..0926046 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -102,3 +102,4 @@ obj-$(CONFIG_SSB)		+= ssb/
+@@ -106,3 +106,4 @@ obj-$(CONFIG_SSB)		+= ssb/
  obj-$(CONFIG_VIRTIO)		+= virtio/
- obj-$(CONFIG_REGULATOR)		+= regulator/
  obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
 +obj-$(CONFIG_PCI2040)		+= pci2040/
 diff --git a/drivers/pci2040/Kconfig b/drivers/pci2040/Kconfig
 new file mode 100644

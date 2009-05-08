@@ -1,14 +1,14 @@
 pkgname=pcan-linux
 pkgver=6.9b
-pkgrel=4
+pkgrel=5
 pkgdesc="Linux netdev drivers for the PEAK ISA card"
 url="http://www.peak-system.com/linux/"
 install=pcan-linux.install
 arch=(i686)
 license=('GPL')
 
-kernsource=`cd ../kernel26/src/linux-2.6.28; pwd`
-kernversion=2.6.28-ARCH
+kernsource=`cd ../kernel26/src/linux-2.6.29; pwd`
+kernversion=2.6.29-ARCH
 install_location="/lib/modules/${kernversion}/misc"
 makeopts="KERNEL_LOCATION=$kernsource USB=NO_USB_SUPPORT PAR=NO_PARPORT_SUBSYSTEM PCI=NO_PCI_SUPPORT DNG=NO_DONGLE_SUPPORT PCC=NO_PCCARD_SUPPORT NET=NETDEV_SUPPORT"
 
