@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=12
+pkgrel=13
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -9,7 +9,7 @@ backup=(etc/conf.d/axum.conf)
 license=('GPL')
 
 source=(\
-  axum-gateway axum-address axum.conf\
+  axum-gateway axum-address axum.conf axum-database.sql\
   http://www.cpan.org/authors/id/M/ML/MLEHMANN/JSON-XS-2.232.tar.gz\
   http://www.cpan.org/authors/id/R/RC/RCAPUTO/POE-1.005.tar.gz\
   http://www.cpan.org/authors/id/K/KJ/KJALB/TermReadKey-2.14.tar.gz\
@@ -43,6 +43,7 @@ build() {
   # Arch scripts & config
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/var/lib/axum"
+  install -m 666 "$startdir/axum-database.sql" "$pkgdir/var/lib/axum"
   install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 -d "$pkgdir/etc/conf.d"
