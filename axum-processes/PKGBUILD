@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=11
+pkgrel=12
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -87,6 +87,8 @@ build() {
   fi
 
   cd en
+  mkdir dsp
+  scp ${gitroot}additional-files/dsp/* dsp/
   make || return 1
   install -m 755 axum-engine "$pkgdir/usr/bin/axum-engine"
   install -m 755 -d "$pkgdir/var/lib/axum/dsp"
