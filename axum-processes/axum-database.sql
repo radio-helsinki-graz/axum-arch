@@ -11,6 +11,11 @@
 --  - More sanity checking (NULL values on custom types)
 --  - Foreign key: configuration(func) -> functions(func)
 --  - db_to_position or position_to_db table
+--  - more triggers
+
+
+CREATE LANGUAGE plpgsql;
+
 
 
 -- T Y P E S
@@ -100,6 +105,11 @@ CREATE TABLE addresses (
 );
 CREATE UNIQUE INDEX addresses_unique_id ON addresses (((id).man), ((id).prod), ((id).id));
 
+CREATE TABLE recent_changes (
+  change varchar(20) NOT NULL,
+  row_id varchar(32) NOT NULL,
+  timestamp timestamp NOT NULL DEFAULT NOW()
+);
 
 
 
@@ -108,4 +118,32 @@ CREATE UNIQUE INDEX addresses_unique_id ON addresses (((id).man), ((id).prod), (
 
 ALTER TABLE configuration ADD FOREIGN KEY (addr) REFERENCES addresses (addr);
 ALTER TABLE defaults      ADD FOREIGN KEY (addr) REFERENCES addresses (addr);
+
+
+
+
+-- T R I G G E R S
+
+CREATE OR REPLACE FUNCTION notify_changes() RETURNS trigger AS $$
+BEGIN
+  -- remove changes older than an hour
+  DELETE FROM recent_changes WHERE timestamp < (NOW() - INTERVAL '1 hour');
+  -- send notify
+  NOTIFY change;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER recent_changes_notify AFTER INSERT ON recent_changes FOR EACH STATEMENT EXECUTE PROCEDURE notify_changes();
+
+
+CREATE OR REPLACE FUNCTION addresses_changed() RETURNS trigger AS $$
+BEGIN
+  INSERT INTO recent_changes (change, row_id) values ('address_removed', OLD.addr::text);
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER addresses_change_notify AFTER DELETE ON addresses FOR EACH ROW EXECUTE PROCEDURE addresses_changed();
+
 
