@@ -1,10 +1,10 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=13
+pkgrel=14
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn' 'json-c')
+depends=('libmbn' 'json-c' 'postgresql-libs')
 backup=(etc/conf.d/axum.conf)
 license=('GPL')
 
