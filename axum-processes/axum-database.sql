@@ -106,9 +106,10 @@ CREATE TABLE addresses (
 CREATE UNIQUE INDEX addresses_unique_id ON addresses (((id).man), ((id).prod), ((id).id));
 
 CREATE TABLE recent_changes (
-  change varchar(20) NOT NULL,
-  row_id varchar(32) NOT NULL,
-  timestamp timestamp NOT NULL DEFAULT NOW()
+  change varchar(32) NOT NULL,
+  arguments varchar(64) NOT NULL,
+  timestamp timestamp NOT NULL DEFAULT NOW(),
+  pid integer NOT NULL DEFAULT pg_backend_pid()
 );
 
 
@@ -139,11 +140,32 @@ CREATE TRIGGER recent_changes_notify AFTER INSERT ON recent_changes FOR EACH STA
 
 CREATE OR REPLACE FUNCTION addresses_changed() RETURNS trigger AS $$
 BEGIN
-  INSERT INTO recent_changes (change, row_id) values ('address_removed', OLD.addr::text);
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES ('address_removed', OLD.addr::text);
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF (OLD.id).man <> (NEW.id).man OR (OLD.id).prod <> (NEW.id).prod OR (OLD.id).id <> (NEW.id).id THEN
+      RAISE EXCEPTION 'Changing addresses.id is not allowed';
+    END IF;
+    IF OLD.engine_addr <> NEW.engine_addr THEN
+      INSERT INTO recent_changes (change, arguments) VALUES ('address_set_engine', NEW.addr::text);
+    END IF;
+    IF OLD.addr <> NEW.addr THEN
+      INSERT INTO recent_changes (change, arguments) VALUES ('address_set_addr', OLD.addr::text||' '||NEW.addr::text);
+    END IF;
+    IF OLD.name <> NEW.name THEN
+      UPDATE addresses SET setname = TRUE WHERE addr = NEW.addr;
+    END IF;
+    IF OLD.setname = FALSE AND NEW.setname = TRUE THEN
+      INSERT INTO recent_changes (change, arguments) VALUES ('address_set_name', NEW.addr::text);
+    END IF;
+    IF OLD.refresh = FALSE AND NEW.refresh = TRUE THEN
+      INSERT INTO recent_changes (change, arguments) VALUES ('address_refresh', NEW.addr::text);
+    END IF;
+  END IF;
   RETURN NULL;
 END
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER addresses_change_notify AFTER DELETE ON addresses FOR EACH ROW EXECUTE PROCEDURE addresses_changed();
+CREATE TRIGGER addresses_change_notify AFTER DELETE OR UPDATE ON addresses FOR EACH ROW EXECUTE PROCEDURE addresses_changed();
 
 
