@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=15
+pkgrel=16
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -8,38 +8,10 @@ depends=('libmbn' 'postgresql-libs')
 backup=(etc/conf.d/axum.conf)
 license=('GPL')
 
-source=(\
-  axum-gateway axum-address axum.conf axum-database.sql\
-  http://www.cpan.org/authors/id/M/ML/MLEHMANN/JSON-XS-2.232.tar.gz\
-  http://www.cpan.org/authors/id/R/RC/RCAPUTO/POE-1.005.tar.gz\
-  http://www.cpan.org/authors/id/K/KJ/KJALB/TermReadKey-2.14.tar.gz\
-)
+source=(axum-gateway axum-address axum.conf axum-database.sql)
 gitroot="git@192.168.0.9:"
 
 build() {
-  # JSON::XS (required for address server client)
-  cd "$srcdir/JSON-XS-2.232"
-  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor || return 1
-  make || return 1
-  make install DESTDIR="$pkgdir" || return 1
-
-  # POE (also required by address server client)
-  cd "$srcdir/POE-1.005"
-  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor || return 1
-  make || return 1
-  make install DESTDIR="$pkgdir" || return 1
-
-  # Term::ReadKey (also required by address server client)
-  cd "$srcdir/TermReadKey-2.14"
-  PERL_MM_USE_DEFAULT=1 perl Makefile.PL INSTALLDIRS=vendor || return 1
-  make || return 1
-  make install DESTDIR="$pkgdir" || return 1
-
-  # Clean up unused perl files
-  find "${pkgdir}" -name perllocal.pod -delete
-  find "${pkgdir}" -name .packlist -delete
-
-
   # Arch scripts & config
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/var/lib/axum"
@@ -63,7 +35,6 @@ build() {
   make || return 1
 
   install -m 755 axum-address "$pkgdir/usr/bin/axum-address"
-  install -m 755 client.pl "$pkgdir/usr/bin/addrclient"
 
 
   # gateway
