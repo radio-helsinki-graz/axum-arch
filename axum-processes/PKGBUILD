@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=17
+pkgrel=18
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -30,20 +30,15 @@ build() {
   install -m 644 "$startdir/axum.conf" "$pkgdir/etc/conf.d/axum.conf"
   install -m 755 -d "$pkgdir/usr/bin"
 
-  # address server
-  cd "$srcdir/g/address"
+  # build everything
+  cd "$srcdir/g"
   make || return 1
-  install -m 755 axum-address "$pkgdir/usr/bin/axum-address"
 
-  # gateway
-  cd "$srcdir/g/gateway"
-  make || return 1
-  install -m 755 axum-gateway "$pkgdir/usr/bin/axum-gateway"
-
-  # engine
-  cd "$srcdir/g/engine"
-  make || return 1
-  install -m 755 axum-engine "$pkgdir/usr/bin/axum-engine"
+  # install binaries
+  install -m 755 address/axum-address "$pkgdir/usr/bin/axum-address"
+  install -m 755 gateway/axum-gateway "$pkgdir/usr/bin/axum-gateway"
+  install -m 755 engine/axum-engine "$pkgdir/usr/bin/axum-engine"
+  install -m 755 learner/axum-learner "$pkgdir/usr/bin/axum-learner"
 
   # dsp firmware files
   mkdir "$srcdir/dsp"
