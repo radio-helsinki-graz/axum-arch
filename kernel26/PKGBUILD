@@ -1,7 +1,7 @@
-pkgname=kernel2629-ARCH
-pkgver=2.6.29
-pkgrel=1
-pkgdesc="The Linux Kernel 2.6.29 with geode support"
+pkgname=kernel2628-ARCH
+pkgver=2.6.28
+pkgrel=7
+pkgdesc="The Linux Kernel 2.6.28 with geode support"
 url="http://www.kernel.org"
 depends=('module-init-tools')
 install=kernel26.install
