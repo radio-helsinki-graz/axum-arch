@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+[ -f /etc/conf.d/axum.conf ] && . /etc/conf.d/axum.conf
+
+PID=`pidof -o %PPID /usr/bin/axum-engine`
+case "$1" in
+  start)
+    stat_busy "Starting Axum Engine"
+    [ -z "$PID" ] && /usr/bin/axum-engine -i $(axum_id engine) ${AXUMENGINEARGS}
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      echo $PID > /var/run/axum-engine.pid
+      add_daemon axum-engine
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping Axum Engine"
+    [ ! -z "$PID" ]  && kill $PID &> /dev/null
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      rm -f /var/run/axum-engine.pid
+      rm_daemon axum-engine
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"  
+esac
+exit 0

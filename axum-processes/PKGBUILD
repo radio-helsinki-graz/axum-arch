@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=20
+pkgrel=21
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -8,7 +8,7 @@ depends=('libmbn' 'postgresql-libs')
 backup=(etc/conf.d/axum.conf)
 license=('GPL')
 
-source=(axum-gateway axum-address axum-learner axum.conf)
+source=(axum-gateway axum-address axum-learner axum-engine axum.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -27,6 +27,7 @@ build() {
   install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 "$startdir/axum-learner" "$pkgdir/etc/rc.d/axum-learner"
+  install -m 755 "$startdir/axum-engine" "$pkgdir/etc/rc.d/axum-engine"
   install -m 755 -d "$pkgdir/etc/conf.d"
   install -m 644 "$startdir/axum.conf" "$pkgdir/etc/conf.d/axum.conf"
   install -m 755 -d "$pkgdir/usr/bin"
