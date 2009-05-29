@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=23
+pkgrel=24
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -23,7 +23,8 @@ build() {
   # Arch scripts & config
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/var/lib/axum"
-  install -m 666 "$srcdir/g/database.sql" "$pkgdir/var/lib/axum"
+  install -m 755 -d "$pkgdir/var/lib/axum/sql"
+  install -m 666 -t "$pkgdir/var/lib/axum/sql" "$srcdir/g/sql/"*
   install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 "$startdir/axum-learner" "$pkgdir/etc/rc.d/axum-learner"
