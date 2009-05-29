@@ -16,26 +16,10 @@ post_install () {
   echo ">>> http://wiki.archlinux.org/index.php/Mkinitcpio"
   echo ""
   echo ">>> Generating initial ramdisk, using mkinitcpio.  Please wait..."
-  /sbin/mkinitcpio -k 2.6.28-ARCH -c /etc/mkinitcpio.conf -g /boot/kernel26.img
+  /sbin/mkinitcpio -k ${KERNEL_VERSION} -c /etc/mkinitcpio.conf -g /boot/kernel26.img
 }
 
 post_upgrade() {
-  pacman -Q grub &>/dev/null
-  hasgrub=$?
-  pacman -Q lilo &>/dev/null
-  haslilo=$?
-  # reminder notices
-  if [ $haslilo -eq 0 ]; then
-    echo ">>>"
-    if [ $hasgrub -eq 0 ]; then
-      echo ">>> If you use the LILO bootloader, you should run 'lilo' before rebooting."
-    else
-      echo ">>> You appear to be using the LILO bootloader. You should run"
-      echo ">>> 'lilo' before rebooting."
-    fi
-    echo ">>>"
-  fi
-
   if grep "/boot" /etc/fstab 2>&1 >/dev/null; then
     if ! grep "/boot" /etc/mtab 2>&1 >/dev/null; then
       echo "WARNING: /boot appears to be a seperate partition but is not mounted"
@@ -46,7 +30,7 @@ post_upgrade() {
   echo ">>> Updating module dependencies. Please wait ..."
   depmod $KERNEL_VERSION
   echo ">>> Generating initial ramdisk, using mkinitcpio.  Please wait..."
-  /sbin/mkinitcpio -k 2.6.28-ARCH -c /etc/mkinitcpio.conf -g /boot/kernel26.img
+  /sbin/mkinitcpio -k ${KERNEL_VERSION} -c /etc/mkinitcpio.conf -g /boot/kernel26.img
 }
 
 op=$1
