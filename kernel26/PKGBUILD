@@ -1,6 +1,6 @@
 pkgname=kernel2628-ARCH
 pkgver=2.6.28
-pkgrel=7
+pkgrel=8
 pkgdesc="The Linux Kernel 2.6.28 with geode support"
 url="http://www.kernel.org"
 depends=('module-init-tools')
@@ -9,7 +9,7 @@ arch=(i686 x86_64)
 license=('GPL')
 
 ##### add any patch sources to this section
-source=(ftp://ftp.nl.kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2 config pci2040.patch)
+source=(ftp://ftp.nl.kernel.org/pub/linux/kernel/v2.6/linux-$pkgver.tar.bz2 config pci2040.patch linux_2.6.28_axum_baudrate.patch)
 
 # Function to grab var from src
 getvar() {
@@ -27,6 +27,7 @@ build() {
 
   ##### Uncomment and apply any patches here
   patch -Np1 -i ../pci2040.patch
+  patch -Np1 -i ../linux_2.6.28_axum_baudrate.patch
 
   # get rid of the 'i' in i686
   carch=`echo $CARCH | sed 's|i||'`

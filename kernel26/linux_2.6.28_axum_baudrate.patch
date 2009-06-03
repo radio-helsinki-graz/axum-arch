@@ -1,0 +1,267 @@
+diff --git a/arch/x86/include/asm/termbits.h b/arch/x86/include/asm/termbits.h
+index af1b70e..3f9ee0b 100644
+--- a/arch/x86/include/asm/termbits.h
++++ b/arch/x86/include/asm/termbits.h
+@@ -144,18 +144,19 @@ struct ktermios {
+ #define    B57600 0010001
+ #define   B115200 0010002
+ #define   B230400 0010003
+-#define   B460800 0010004
+-#define   B500000 0010005
+-#define   B576000 0010006
+-#define   B921600 0010007
+-#define  B1000000 0010010
+-#define  B1152000 0010011
+-#define  B1500000 0010012
+-#define  B2000000 0010013
+-#define  B2500000 0010014
+-#define  B3000000 0010015
+-#define  B3500000 0010016
+-#define  B4000000 0010017
++#define   B250000 0010004
++#define   B460800 0010005
++#define   B500000 0010006
++#define   B576000 0010007
++#define   B921600 0010010
++#define  B1000000 0010011
++#define  B1152000 0010012
++#define  B1500000 0010013
++#define  B2000000 0010014
++#define  B2500000 0010015
++#define  B3000000 0010016
++#define  B3500000 0010017
++#define  B4000000 0010020
+ #define CIBAUD	  002003600000	/* input baud rate */
+ #define CMSPAR	  010000000000	/* mark or space (stick) parity */
+ #define CRTSCTS	  020000000000	/* flow control */
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index a408c8e..5d126ee 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -188,7 +188,7 @@ static void unset_locked_termios(struct ktermios *termios,
+  */
+ static const speed_t baud_table[] = {
+ 	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800,
+-	9600, 19200, 38400, 57600, 115200, 230400, 460800,
++	9600, 19200, 38400, 57600, 115200, 230400, 250000, 460800,
+ #ifdef __sparc__
+ 	76800, 153600, 307200, 614400, 921600
+ #else
+@@ -209,7 +209,7 @@ static const tcflag_t baud_bits[] = {
+ static const tcflag_t baud_bits[] = {
+ 	B0, B50, B75, B110, B134, B150, B200, B300, B600,
+ 	B1200, B1800, B2400, B4800, B9600, B19200, B38400,
+-	B57600, B115200, B230400, B460800, B76800, B153600,
++	B57600, B115200, B230400, B250000, B460800, B76800, B153600,
+ 	B307200, B614400, B921600
+ };
+ #endif
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 303272a..7112c79 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -844,6 +844,137 @@ static int broken_efr(struct uart_8250_port *up)
+ 	return 0;
+ }
+ 
++/***********************************************
++Super-I/O constants and functions
++***********************************************/
++#define W83627EHF_LD_FDC        0x00
++#define W83627EHF_LD_LPT        0x01
++#define W83627EHF_LD_UARTA      0x02
++#define W83627EHF_LD_UARTB      0x03
++
++#define W83627EHF_LD_HWM        0x0b
++
++#define SIO_REG_LDSEL           0x07  /* Logical device select */
++#define SIO_REG_DEVID           0x20  /* Device ID (2 bytes) */
++#define SIO_REG_EN_VRM10        0x2C  /* GPIO3, GPIO4 selection */
++#define SIO_REG_ENABLE          0x30  /* Logical device enable */
++#define SIO_REG_ADDR            0x60  /* Logical device address (2 bytes) */
++#define SIO_REG_VID_CTRL        0xF0  /* VID control */
++#define SIO_REG_VID_DATA        0xF1  /* VID data */
++ 
++#define SIO_REG_UART_PRESCALER  0xF0
++
++#define SIO_W83627EHF_ID        0x8850
++#define SIO_W83627EHG_ID        0x8860
++#define SIO_W83627DHG_ID        0xa020
++#define SIO_ID_MASK             0xFFF0
++
++static inline void superio_outb(int ioreg, int reg, int val)
++{
++  outb(reg, ioreg);
++  outb(val, ioreg + 1);
++}
++
++static inline int superio_inb(int ioreg, int reg)
++{
++  outb(reg, ioreg);
++  return inb(ioreg + 1);
++}
++
++static inline void superio_select(int ioreg, int ld)
++{
++  outb(SIO_REG_LDSEL, ioreg);
++  outb(ld, ioreg + 1);
++}
++
++static inline void superio_enter(int ioreg)
++{
++  outb(0x87, ioreg);
++  outb(0x87, ioreg);
++}
++
++static inline void superio_exit(int ioreg)
++{
++  outb(0x02, ioreg);
++  outb(0x02, ioreg + 1);
++}
++
++/* ISA constants */
++#define IOREGION_ALIGNMENT ~7
++#define IOREGION_OFFSET    5
++#define IOREGION_LENGTH    2
++#define ADDR_REG_OFFSET    0
++#define DATA_REG_OFFSET    1
++ 
++#define W83627EHF_REG_BANK       0x4E
++#define W83627EHF_REG_CONFIG     0x40
++
++int w83627ehf_find(int sioaddr, unsigned short *addr)
++{
++  u16 val;
++  const char *sio_name;
++
++  superio_enter(sioaddr);
++
++  val = (superio_inb(sioaddr, SIO_REG_DEVID) << 8) | superio_inb(sioaddr, SIO_REG_DEVID + 1);
++
++  switch (val & SIO_ID_MASK) 
++  {
++    case SIO_W83627EHF_ID:
++    {
++      sio_name = "W83627EHF";
++    }
++    break;
++    case SIO_W83627EHG_ID:
++    {
++      sio_name = "W83627EHG";
++    }
++    break;
++    case SIO_W83627DHG_ID:
++    {
++      sio_name = "W83627DHG";
++    }
++    break;
++    default:
++    {
++      if (val != 0xffff)
++      {
++        pr_debug("8250: probe for W83627, unsupported chip ID: 0x%04x\n", val);
++      }
++      superio_exit(sioaddr);
++      return -ENODEV;
++    }
++  }
++
++  /* We have a known chip, find the HWM I/O address */
++  superio_select(sioaddr, W83627EHF_LD_HWM);
++  val = (superio_inb(sioaddr, SIO_REG_ADDR) << 8) | superio_inb(sioaddr, SIO_REG_ADDR + 1);
++  *addr = val & IOREGION_ALIGNMENT;
++  if (*addr == 0) 
++  {
++    printk("8250: probe for W83627, refusing to enable a Super-I/O device with a base I/O port 0.\n");
++    superio_exit(sioaddr);
++    return -ENODEV;
++  }
++  
++  /* Activate logical device if needed */
++  val = superio_inb(sioaddr, SIO_REG_ENABLE);
++  if (!(val & 0x01)) 
++  {
++    printk(KERN_WARNING "8250: probe for W83627, forcibly enabling Super-I/O. Sensor is probably unusable.\n");
++    superio_outb(sioaddr, SIO_REG_ENABLE, val | 0x01);
++  }
++
++  superio_exit(sioaddr);
++  pr_info("8250: probe for W83627@%x, found %s chip at %#x\n", sioaddr, sio_name, *addr);
++  
++  return 0;
++}
++/***********************************************
++End of superio functions
++***********************************************/
++
++
+ /*
+  * We know that the chip has FIFOs.  Does it have an EFR?  The
+  * EFR is located in the same register position as the IIR and
+@@ -854,7 +985,10 @@ static void autoconfig_16550a(struct uart_8250_port *up)
+ {
+ 	unsigned char status1, status2;
+ 	unsigned int iersave;
+-
++  unsigned short address;
++  unsigned short W83627Port;
++  u16 val;
++      
+ 	up->port.type = PORT_16550A;
+ 	up->capabilities |= UART_CAP_FIFO;
+ 
+@@ -955,6 +1089,54 @@ static void autoconfig_16550a(struct uart_8250_port *up)
+ 		return;
+ 	}
+ 
++  /* Try yo find a W83627 port for advanced baudrate settings */
++  W83627Port = -1;
++  if (w83627ehf_find(0x2e, &address) == 0)
++  {
++    W83627Port = 0x2e;
++  }
++  if (w83627ehf_find(0x4e, &address) == 0)
++  {
++    W83627Port = 0x4e;
++  }
++
++  if ((W83627Port == 0x2e) || (W83627Port == 0x4e))
++  {
++    superio_enter(W83627Port);
++    
++    superio_select(W83627Port, W83627EHF_LD_UARTA);
++    val = (superio_inb(W83627Port, SIO_REG_ADDR) << 8) | superio_inb(W83627Port, SIO_REG_ADDR + 1);
++    address = val & IOREGION_ALIGNMENT;
++    //printk(KERN_ERR "iobase: %04X address: %04X\r\n", up->port.iobase, address);      
++    if (address == up->port.iobase)
++    {
++      val = superio_inb(W83627Port, SIO_REG_UART_PRESCALER);
++      val &= 0xFC;
++      val |= 0x02;   // UARTA clock source is 24 Mhz /1 ->
++      
++      superio_outb(W83627Port, SIO_REG_UART_PRESCALER, val);
++      
++      up->port.uartclk = 24000000;
++    }
++    
++    superio_select(W83627Port, W83627EHF_LD_UARTB);
++    val = (superio_inb(W83627Port, SIO_REG_ADDR) << 8) | superio_inb(W83627Port, SIO_REG_ADDR + 1);
++    address = val & IOREGION_ALIGNMENT;
++    //printk(KERN_ERR "iobase: %04X address: %04X\r\n", up->port.iobase, address);      
++    if (address == up->port.iobase)
++    {
++      val = superio_inb(W83627Port, SIO_REG_UART_PRESCALER);
++      val &= 0xFC;
++      val |= 0x02;   // UARTB clock source is 24 Mhz /1 ->
++
++      superio_outb(W83627Port, SIO_REG_UART_PRESCALER, val);
++      
++      up->port.uartclk = 24000000;
++    }
++    
++    superio_exit(W83627Port);
++  }
++
+ 	/*
+ 	 * Try writing and reading the UART_IER_UUE bit (b6).
+ 	 * If it works, this is probably one of the Xscale platform's
