@@ -3,3 +3,5 @@
 */pkg
 */src
 kernel26/config-*
+.INSTALL
+.PKGINFO
