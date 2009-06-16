@@ -1,6 +1,6 @@
 pkgname=kernel2628-ARCH
 pkgver=2.6.28
-pkgrel=8
+pkgrel=9
 pkgdesc="The Linux Kernel 2.6.28 with geode support"
 url="http://www.kernel.org"
 depends=('module-init-tools')

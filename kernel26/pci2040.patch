@@ -19,9 +19,8 @@ index fceb71a..0757910 100644
  obj-$(CONFIG_STAGING)		+= staging/
 +obj-$(CONFIG_PCI2040)		+= pci2040/
 diff --git a/drivers/pci2040/Kconfig b/drivers/pci2040/Kconfig
-new file mode 100644
-index 0000000..51a2a8f
---- /dev/null
+index e69de29..51a2a8f 100644
+--- a/drivers/pci2040/Kconfig
 +++ b/drivers/pci2040/Kconfig
 @@ -0,0 +1,17 @@
 +#
@@ -42,16 +41,14 @@ index 0000000..51a2a8f
 +endmenu
 +
 diff --git a/drivers/pci2040/Makefile b/drivers/pci2040/Makefile
-new file mode 100644
-index 0000000..5944edd
---- /dev/null
+index e69de29..5944edd 100644
+--- a/drivers/pci2040/Makefile
 +++ b/drivers/pci2040/Makefile
 @@ -0,0 +1 @@
 +obj-y	= pci2040.o
 diff --git a/drivers/pci2040/ddpci2040.h b/drivers/pci2040/ddpci2040.h
-new file mode 100644
-index 0000000..8d04950
---- /dev/null
+index e69de29..8d04950 100644
+--- a/drivers/pci2040/ddpci2040.h
 +++ b/drivers/pci2040/ddpci2040.h
 @@ -0,0 +1,442 @@
 +////////////////////////////////////////////////////////////////////
@@ -497,11 +494,10 @@ index 0000000..8d04950
 +                                    // HPI-8 extended address bits. Only the host has access                                    // to this bit, and it is not initialized after reset.
 +#endif
 diff --git a/drivers/pci2040/pci2040.c b/drivers/pci2040/pci2040.c
-new file mode 100644
-index 0000000..4c53beb
---- /dev/null
+index e69de29..85bcab0 100644
+--- a/drivers/pci2040/pci2040.c
 +++ b/drivers/pci2040/pci2040.c
-@@ -0,0 +1,502 @@
+@@ -0,0 +1,481 @@
 +/* BYTEpci2040.c: A Linux PCI  driver for the Texas Instruments PCI2040. */
 +/*
 +	Copyright 2007 Anton Prins
@@ -524,8 +520,12 @@ index 0000000..4c53beb
 +
 +#define DRV_MAX_NR_OF_ADAPTORS	8
 +#define DRV_NAME		"pci2040"
-+#define DRV_VERSION		"0.1"
-+#define DRV_RELDATE		"Apr 23, 2007"
++#define DRV_VERSION		"1.0"
++#define DRV_RELDATE		"June 6, 2009"
++
++static struct class *pci2040_dev_class;
++struct device *pci2040_dev;
++
 +
 +/* These identify the driver base version and may not be removed. */
 +static char version[] =
@@ -546,14 +546,6 @@ index 0000000..4c53beb
 +{
 +	struct pci_dev *pdev;
 +
-+	/*unsigned long PtrHPI_CSR;
-+	unsigned long PtrDSP_HPI;
-+	unsigned long PtrGPB_TBC;
-+
-+        unsigned long PtrHPIC[4];
-+        unsigned long PtrHPIA[4];
-+        unsigned long PtrHPID_AutoIncrement[4];
-+        unsigned long PtrHPID[4];*/
 +} PCIDeviceData[DRV_MAX_NR_OF_ADAPTORS];
 +
 +static int pci2040_open(struct inode *inode, struct file *file)
@@ -878,45 +870,6 @@ index 0000000..4c53beb
 +		return err;	
 +	}
 +
-+	/* No mapping to virtual kernel memory required...
-+	for (idx=0; idx<4; idx++) 
-+	{
-+		memlen = pci_resource_len(pdev, idx);
-+		if (memlen) 
-+		{
-+			switch (idx)
-+			{
-+				case 0:
-+				{
-+					PCIDeviceData[pci2040_count].PtrHPI_CSR = (unsigned long)ioremap(pci_resource_start(pdev,idx), memlen);
-+				}
-+				break;
-+				case 1:
-+				{
-+					PCIDeviceData[pci2040_count].PtrDSP_HPI = (unsigned long) ioremap(pci_resource_start(pdev,idx), memlen);
-+				}
-+				break;
-+				case 2:
-+				{
-+					PCIDeviceData[pci2040_count].PtrGPB_TBC = (unsigned long)ioremap(pci_resource_start(pdev,idx), memlen);
-+				}
-+				break;
-+				default:
-+				{
-+					printk("Unknown idx=%d, addr=%lx\n", idx, (unsigned long)ioremap(pci_resource_start(pdev,idx), memlen));
-+				}
-+				break;
-+			}	
-+		} 
-+	}*/
-+
-+/*	for (cntRegister=0; cntRegister<0x64; cntRegister+=4)
-+	{
-+		pci_read_config_dword(pdev, cntRegister, &ConfigurationData);
-+		printk("pci2040: PCI Configuration register 0x%02X = 0x%08X\n", cntRegister, ConfigurationData);
-+		mdelay(500);
-+	}*/
-+
 +	PCIDeviceData[pci2040_count].pdev = pdev;
 +
 +	pci2040_count++;
@@ -984,11 +937,29 @@ index 0000000..4c53beb
 +	   printk("pci2040: failed with error %d for major number %d\n", -status, major);
 +
 +	   return -EIO;
-+	}	
++	}
++  major = status;  
 +//	printk("pci2040: register_chrdev returned %d\n", status);
++
++  //create class for UEVENT and UDEV compatibility
++	pci2040_dev_class = class_create(THIS_MODULE, "pci2040");
++	if (IS_ERR(pci2040_dev_class)) {
++    unregister_chrdev(major, "pci2040");
++		return PTR_ERR(pci2040_dev_class);
++	}
++
++  pci2040_dev = device_create(pci2040_dev_class, NULL, MKDEV(major, 0), NULL, "pci2040_%d", 0);
++  if (pci2040_dev == NULL)
++  {
++    class_destroy(pci2040_dev_class);
++    unregister_chrdev(major, "pci2040");
++    printk("pci2040: device_create failed, for major number %d\n", major);
++    return -EIO;
++  }
 +
 +	if (!major)
 +	{
++    printk("pci2040: major %d used.\n", major);
 +		major = status;	
 +	}
 +
@@ -997,6 +968,10 @@ index 0000000..4c53beb
 +
 +static void __exit pci2040_exit (void)
 +{
++  device_destroy(pci2040_dev_class,MKDEV(major,0));
++
++  class_destroy(pci2040_dev_class);
++
 +	unregister_chrdev(major, "pci2040");
 +
 +	pci_unregister_driver (&pci2040_driver);
