@@ -494,10 +494,10 @@ index e69de29..8d04950 100644
 +                                    // HPI-8 extended address bits. Only the host has access                                    // to this bit, and it is not initialized after reset.
 +#endif
 diff --git a/drivers/pci2040/pci2040.c b/drivers/pci2040/pci2040.c
-index e69de29..85bcab0 100644
+index e69de29..d8122de 100644
 --- a/drivers/pci2040/pci2040.c
 +++ b/drivers/pci2040/pci2040.c
-@@ -0,0 +1,481 @@
+@@ -0,0 +1,496 @@
 +/* BYTEpci2040.c: A Linux PCI  driver for the Texas Instruments PCI2040. */
 +/*
 +	Copyright 2007 Anton Prins
@@ -528,8 +528,8 @@ index e69de29..85bcab0 100644
 +
 +
 +/* These identify the driver base version and may not be removed. */
-+static char version[] =
-+KERN_INFO DRV_NAME ": PCI2040 PCI Bridge v" DRV_VERSION " (" DRV_RELDATE ")\n";
++//static char version[] =
++//KERN_INFO DRV_NAME ": PCI2040 PCI Bridge v" DRV_VERSION " (" DRV_RELDATE ")\n";
 +
 +MODULE_AUTHOR("Anton Prins <a.prins@d-r.nl>");
 +MODULE_DESCRIPTION("Texas Instrumentes PCI2040 driver");
@@ -909,6 +909,7 @@ index e69de29..85bcab0 100644
 +static int __init pci2040_init (void)
 +{
 +	int status;
++  int cntDevice;
 +
 +	printk("loading PCI2040 kernel driver\n");
 +#ifdef MODULE
@@ -948,13 +949,22 @@ index e69de29..85bcab0 100644
 +		return PTR_ERR(pci2040_dev_class);
 +	}
 +
-+  pci2040_dev = device_create(pci2040_dev_class, NULL, MKDEV(major, 0), NULL, "pci2040_%d", 0);
-+  if (pci2040_dev == NULL)
++  for (cntDevice=0; cntDevice<pci2040_count; cntDevice++)
 +  {
-+    class_destroy(pci2040_dev_class);
-+    unregister_chrdev(major, "pci2040");
-+    printk("pci2040: device_create failed, for major number %d\n", major);
-+    return -EIO;
++    int driver_nr;
++	  
++    printk("cntDevice: %d, PCI slot: %d\n", cntDevice, PCI_SLOT(PCIDeviceData[cntDevice].pdev->devfn));
++
++    driver_nr = 12-PCI_SLOT(PCIDeviceData[cntDevice].pdev->devfn); 
++
++    pci2040_dev = device_create(pci2040_dev_class, NULL, MKDEV(major, cntDevice), NULL, "pci2040_%d", driver_nr);
++    if (pci2040_dev == NULL)
++    {
++      class_destroy(pci2040_dev_class);
++      unregister_chrdev(major, "pci2040");
++      printk("pci2040: device_create failed, for major number %d\n", major);
++      return -EIO;
++    }
 +  }
 +
 +	if (!major)
@@ -968,7 +978,12 @@ index e69de29..85bcab0 100644
 +
 +static void __exit pci2040_exit (void)
 +{
-+  device_destroy(pci2040_dev_class,MKDEV(major,0));
++  int cntDevice;
++
++  for (cntDevice=0; cntDevice<pci2040_count; cntDevice++)
++  {
++    device_destroy(pci2040_dev_class,MKDEV(major,0));
++  }
 +
 +  class_destroy(pci2040_dev_class);
 +
