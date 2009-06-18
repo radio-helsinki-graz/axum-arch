@@ -494,7 +494,7 @@ index e69de29..8d04950 100644
 +                                    // HPI-8 extended address bits. Only the host has access                                    // to this bit, and it is not initialized after reset.
 +#endif
 diff --git a/drivers/pci2040/pci2040.c b/drivers/pci2040/pci2040.c
-index e69de29..d8122de 100644
+index e69de29..378dc48 100644
 --- a/drivers/pci2040/pci2040.c
 +++ b/drivers/pci2040/pci2040.c
 @@ -0,0 +1,496 @@
@@ -943,7 +943,7 @@ index e69de29..d8122de 100644
 +//	printk("pci2040: register_chrdev returned %d\n", status);
 +
 +  //create class for UEVENT and UDEV compatibility
-+	pci2040_dev_class = class_create(THIS_MODULE, "pci2040");
++	pci2040_dev_class = class_create(THIS_MODULE, "dsp");
 +	if (IS_ERR(pci2040_dev_class)) {
 +    unregister_chrdev(major, "pci2040");
 +		return PTR_ERR(pci2040_dev_class);
@@ -953,11 +953,11 @@ index e69de29..d8122de 100644
 +  {
 +    int driver_nr;
 +	  
-+    printk("cntDevice: %d, PCI slot: %d\n", cntDevice, PCI_SLOT(PCIDeviceData[cntDevice].pdev->devfn));
++    printk("DSP card: %d, PCI slot: %d\n", cntDevice, PCI_SLOT(PCIDeviceData[cntDevice].pdev->devfn));
 +
 +    driver_nr = 12-PCI_SLOT(PCIDeviceData[cntDevice].pdev->devfn); 
 +
-+    pci2040_dev = device_create(pci2040_dev_class, NULL, MKDEV(major, cntDevice), NULL, "pci2040_%d", driver_nr);
++    pci2040_dev = device_create(pci2040_dev_class, NULL, MKDEV(major, cntDevice), NULL, "dsp%d", driver_nr);
 +    if (pci2040_dev == NULL)
 +    {
 +      class_destroy(pci2040_dev_class);
