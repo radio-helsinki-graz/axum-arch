@@ -8,7 +8,11 @@ PID=`pidof -o %PPID /usr/bin/axum-gateway`
 case "$1" in
   start)
     stat_busy "Starting Axum Gateway"
-    [ -z "$PID" ] && /usr/bin/axum-gateway -i $(axum_id gateway) ${AXUMGATEWAYARGS}
+    CAN_INTERFACE='/dev/ttyS1'
+    if (ifconfig can0 >/dev/null 2>&1); then
+      CAN_INTERFACE='can0'
+    fi
+    [ -z "$PID" ] && /usr/bin/axum-gateway -i $(axum_id gateway) -c ${CAN_INTERFACE} ${AXUMGATEWAYARGS}
     if [ $? -gt 0 ]; then
       stat_fail
     else
