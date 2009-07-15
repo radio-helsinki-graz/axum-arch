@@ -1,5 +1,5 @@
-*.gz
-*.bz2
+*.pkg.tar.gz
+linux-2.6.28.tar.bz2
 */pkg
 */src
 kernel26/config-*

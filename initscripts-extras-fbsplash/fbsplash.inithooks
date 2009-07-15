@@ -1,0 +1,156 @@
+# Distributed under the terms of the GNU General Public License
+
+#                                                            #
+# /etc/rc.d/functions.d/fbsplash.sh                          #
+#                                                            #
+# ArchLinux initscript hooks for fbsplash                    #
+#                                                            #
+# Author: Kurt J. Bosch <kujub [at] quantentunnel [dot] de>  #
+# Based on the work of:                                      #
+#         Greg Helton <gt [at] fallendusk [dot] org>         #
+#         Thomas Baechler <thomas [at] archlinux [dot] org>  #
+#         Aaron Griffin <aaron [at] archlinux [dot] org>     #
+# and others.                                                #
+#                                                            #
+
+. /etc/conf.d/fbsplash
+. /sbin/splash-functions.sh
+
+####
+####  Functions cloned from initscripts
+####
+
+splash_real_stat_busy() {
+	printf "${C_OTHER}${PREFIX_REG} ${C_MAIN}${1}${C_CLEAR} "
+	printf "${SAVE_POSITION}"
+ 	deltext
+	printf "   ${C_OTHER}[${C_BUSY}BUSY${C_OTHER}]${C_CLEAR} "
+}
+
+splash_real_stat_fail() {
+	deltext
+	printf "   ${C_OTHER}[${C_FAIL}FAIL${C_OTHER}]${C_CLEAR} \n"
+}
+
+splash_real_stat_done() {
+	deltext
+	printf "   ${C_OTHER}[${C_DONE}DONE${C_OTHER}]${C_CLEAR} \n"
+}
+
+####
+####  Hook-functions overriding those from initscripts
+####  (and some init commands)
+####
+
+splash_script_path="${splash_script_path:-${0}}"
+splash_script="${splash_script_path##*/}"
+
+case "${PREVLEVEL}_${RUNLEVEL}" in
+	[NS]_[S2-5]	) splash_action=start ;;
+	[2-5]_[06]	) splash_action=stop  ;;
+	*		) return ;;
+esac
+
+case "${splash_script_path}" in
+	/etc/rc.d/* )
+		stat_busy() {
+			splash_real_stat_busy "${1}"
+			splash_busy_msg="${1}"
+			splash_stat_busy
+		}
+		stat_fail() {
+			splash_real_stat_fail
+			splash_stat_fail ${splash_action}
+		}
+		stat_done() {
+			splash_real_stat_done
+			splash_stat_done
+		}
+		return
+	;;
+	/etc/rc.sysinit )
+		stat_busy() {
+			# start the daemon if ready and fadein from initcpio finished
+			if [ "${splash_init_step}" = 1 -a -z "$( pidof fbcondecor_helper )" ]; then
+				splash rc_init sysinit
+				splash_init_step=2
+			fi
+			splash_real_stat_busy "${1}"
+			splash_busy_msg="${1}"
+			splash_rc_busy
+		}
+		stat_fail() {
+			splash_real_stat_fail
+			splash_rc_fail start
+		}
+		stat_done() {
+			splash_real_stat_done
+			case "${splash_busy_msg}" in
+				"Starting UDev Daemon" | \
+				"Using static /dev filesystem" )
+					splash_devs_prep
+					splash_init_step=1
+				;;
+			esac
+			splash_rc_done
+		}
+		splash_pre_init sysinit
+	;;
+	/etc/rc.multi )
+		start_daemon() {
+			splash_pre_daemon start $1
+			/etc/rc.d/$1 start
+			splash_post_daemon start $1
+			[ "${1}" = fbsplash ] && splash rc_exit
+		}
+		start_daemon_bkgd() {
+			stat_bkgd "Starting $1"
+			(
+				splash_pre_daemon start $1
+				/etc/rc.d/$1 start 
+				splash_post_daemon start $1
+			) &>/dev/null &
+		}
+		splash_pre_init boot
+		splash rc_init boot
+	;;
+	/etc/rc.shutdown ) 
+		stat_busy() {
+			splash_real_stat_busy "${1}"
+			splash_busy_msg="${1}"
+			splash_rc_busy
+			if [ "${1}" = "Sending SIGTERM To Processes" ]; then
+				(	trap : SIGTERM
+					while splash_have_daemon ; do sleep .25 ; done
+					splash_restart
+				) &
+			fi
+		}
+		stat_fail() {
+			splash_real_stat_fail
+			splash_rc_fail stop
+		}
+		stat_done() {
+			splash_real_stat_done
+			splash_rc_done
+			
+			case "${splash_busy_msg}" in
+				"Sending SIGKILL To Processes" )
+					splash_restart
+				;;
+				"Remounting Root Filesystem Read-only" )
+					splash rc_exit
+				;;
+			esac
+		}
+		stop_daemon() {
+			splash_pre_daemon stop $1
+			/etc/rc.d/$1 stop
+			splash_post_daemon stop $1
+		}
+		splash_pre_init shutdown
+		splash rc_init shutdown
+	;;
+esac
+
+# EOF #

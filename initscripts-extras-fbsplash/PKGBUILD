@@ -1,0 +1,58 @@
+
+# Maintainer: Kurt J. Bosch <kujub at quantentunnel dot de>
+
+pkgname=initscripts-extras-fbsplash
+pkgver=64
+pkgrel=1
+pkgdesc="Scripts for hooking fbsplash into ArchLinux initscripts and initcpio"
+arch=('i686' 'x86_64')
+url="http://aur.archlinux.org/packages.php?ID=26039"
+license=('GPL')
+depends=('initscripts=2009.03' 'fbsplash>=1.5.4.3-17') 
+optdepends=( 
+   'udev			Create device nodes needed in a clean way'
+   'fbsplash-theme-arch-black	ArchLinux Fbsplash theme with the new logo'
+   'fbsplash-themes-arch-banner	Themes with ArchLinux banner and optional daemon icons'
+   'uswsusp-fbsplash		Suspend to disk with fbsplash'
+   'kernel26-fbcondecor		Enable console background images'
+)
+conflicts=('initscripts-splashy')
+backup=('etc/conf.d/fbsplash')
+install=initscripts-extras-fbsplash.install
+	
+source=(fbsplash.inithooks
+	splash-functions-arch.sh
+	fbsplash.initcpio_install
+	fbsplash.initcpio_hook
+	fbsplash.daemon
+	fbsplash.conf
+	fbsplash.test
+	Changelog)
+md5sums=('5f6a3e327eb8f9da81d7d6c8478aa89d'
+         'b20e5071d72f0b346072b05936225c15'
+         '43acb90eaa13670060a0654bfb2e9966'
+         'e3cf257b051104859dae61e27e8c8fd1'
+         'a5d1d1ddfed09515d360ee15874c71bf'
+         '1c69bfa2ae3480878f4cea91cc9cdd7e'
+         '071a8a14b8d5e6124ef5c4b4e1db2a29'
+         'cc09e9af23a0846edc8e163b4614f666')
+	
+build() {
+	cd ${pkgdir}
+
+	### Install scripts
+	install -D -m644 ${srcdir}/fbsplash.inithooks        etc/rc.d/functions.d/fbsplash.sh || return 1
+	install -D -m644 ${srcdir}/splash-functions-arch.sh  sbin/splash-functions-arch.sh || return 1
+	install -D -m644 ${srcdir}/fbsplash.initcpio_install lib/initcpio/install/fbsplash || return 1
+	install -D -m644 ${srcdir}/fbsplash.initcpio_hook    lib/initcpio/hooks/fbsplash || return 1
+	install -D -m755 ${srcdir}/fbsplash.daemon           etc/rc.d/fbsplash || return 1
+
+	# Install the config file
+	install -D -m644 ${srcdir}/fbsplash.conf             etc/conf.d/fbsplash || return 1
+
+	# Link it so that the upstream fbsplash script can use it
+	ln -s fbsplash					     etc/conf.d/fbcondecor || return 1
+
+	## Install additional stuff
+	install -D -m644 ${srcdir}/Changelog usr/share/doc/${pkgname}/Changelog
+}

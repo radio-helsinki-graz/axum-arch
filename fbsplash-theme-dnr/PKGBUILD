@@ -1,0 +1,18 @@
+# Maintainer: Anton Prins <a.prins@d-r.nl>
+
+pkgname=fbsplash-theme-dnr
+pkgver=1
+pkgrel=1
+pkgdesc="An D&R Axum branded fbsplash theme"
+arch=('i686')
+license="GPL"
+url="http://www.d-r.nl"
+depends=('fbsplash' 'initscripts-extras-fbsplash')
+source=()
+
+build() {
+  cd ${srcdir}
+  mkdir -p ${pkgdir}/etc/splash/dnr
+  cd ..
+  cp -r dnr ${pkgdir}/etc/splash/
+}

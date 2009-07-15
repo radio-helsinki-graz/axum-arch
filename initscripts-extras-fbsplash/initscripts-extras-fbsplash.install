@@ -1,0 +1,44 @@
+
+post_install() {
+	cat <<EOT
+========================================================================
+==> Please add fbsplash to your HOOKS in /etc/mkinitcpio.conf
+==> It should be put behind uresume or at least udev. Example:
+==> HOOKS="base udev autodetect pata scsi sata uresume fbsplash resume filesystems"
+==>
+==> To be extra safe, you may exclude the hook from your fallback initcpios in
+==> /etc/mkinitcpio.d/kernel26[...].preset  like so:
+==> fallback_options="-S autodetect,fbsplash"
+==>
+==> Don't forget to update your initcpio:
+==> mkinitcpio -p kernel26[...]
+==>
+==> Add parameters needed to your kernel line. 'logo.nologo' will make
+==> non fbcondecor kernels extra silent. Example: ... video=vesafb vga=792 
+==> ... logo.nologo quiet console=tty1 splash=silent,theme:arch-black,fadein,fadeout
+==>
+==> Add fbsplash to DAEMONS in /etc/rc.conf right *before* the point where
+==> Xorg is started {xdm,gdm,kdm,...} or at the end if you don't start Xorg
+==> from there. If you use gpm, it should be put *behind* fbsplash.
+==>
+==> IMPORTANT !   'fbsplash' is needed to be in DAEMONS to stop the splash
+==>               daemon or at least detach it from the keyboard !
+==>               Running it in background will *not* work !
+==>
+==> ATTENTION !   This package is using   /etc/conf.d/fbsplash
+==>                      now instead of   /etc/conf.d/fbsplash.conf !
+==>               Some configuration options have been renamed or removed !
+==============================================================================
+EOT
+
+}
+
+post_upgrade() {
+	post_install
+}
+
+op=$1
+shift
+$op $*
+
+#EOF
