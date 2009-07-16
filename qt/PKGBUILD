@@ -1,10 +1,10 @@
-pkgname=qt
-pkgver=4.5.1
+pkgname=qt-dnr
+pkgver=4.5.2
 pkgrel=1
 pkgdesc='Qt library optimized for the AXUM'
 arch=('i686')
 license=('GPL3' 'LGPL')
-depends=('libpng' 'zlib' 'sqlite3')
+depends=('libpng' 'zlib' 'libjpeg' 'postgresql-libs')
 provides=("qt=${pkgver}" "qt4=${pkgver}")
 conflicts=('qt4' 'qt')
 
@@ -17,20 +17,19 @@ build() {
     -opensource \
     -no-largefile \
     -no-accessibility \
-    -plugin-sql-sqlite \
-    -system-sqlite \
+    -qt-sql-psql \
     -no-qt3support \
     -no-phonon \
     -no-xmlpatterns \
     -no-svg \
     -webkit \
-    -no-scripttools \
+    -scripttools \
     -system-zlib \
     -no-gif \
     -no-libtiff \
     -system-libpng \
     -no-libmng \
-    -no-libjpeg \
+    -system-libjpeg \
     -no-openssl \
     -nomake examples \
     -nomake demos \
