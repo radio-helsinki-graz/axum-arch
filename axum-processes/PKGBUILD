@@ -1,10 +1,10 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=24
+pkgrel=25
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn' 'postgresql-libs')
+depends=('libmbn' 'postgresql-libs' 'qt-dnr')
 backup=(etc/conf.d/axum.conf etc/conf.d/ip)
 license=('GPL')
 
@@ -29,6 +29,7 @@ build() {
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 "$startdir/axum-learner" "$pkgdir/etc/rc.d/axum-learner"
   install -m 755 "$startdir/axum-engine" "$pkgdir/etc/rc.d/axum-engine"
+  install -m 755 "$startdir/axum-meters" "$pkgdir/etc/rc.d/axum-meters"
   #TODO: after package install you have to add the daemons in the /etc/rc.conf
   install -m 755 -d "$pkgdir/etc/conf.d"
   install -m 644 "$startdir/axum.conf" "$pkgdir/etc/conf.d/axum.conf"
@@ -46,6 +47,7 @@ build() {
   install -m 755 gateway/axum-gateway "$pkgdir/usr/bin/axum-gateway"
   install -m 755 engine/axum-engine "$pkgdir/usr/bin/axum-engine"
   install -m 755 learner/axum-learner "$pkgdir/usr/bin/axum-learner"
+  install -m 755 meters/axum-meters "$pkgdir/usr/bin/axum-meters"
 
   # dsp firmware files
   mkdir "$srcdir/dsp"
