@@ -4,11 +4,11 @@ pkgrel=25
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn' 'postgresql-libs' 'qt-dnr')
+depends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets')
 backup=(etc/conf.d/axum.conf etc/conf.d/ip)
 license=('GPL')
 
-source=(axum-gateway axum-address axum-learner axum-engine axum.conf ip.conf)
+source=(axum-gateway axum-address axum-learner axum-engine axum-meters axum.conf ip.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -55,5 +55,10 @@ build() {
   scp "${gitroot}additional-files/dsp/*" .
   install -m 755 -d "$pkgdir/var/lib/axum/dsp"
   install -m 644 -t "$pkgdir/var/lib/axum/dsp" *
+
+  cd "$srcdir/g/meters"
+  qmake
+  make
+  make INSTALL_ROOT="$pkgdir" install
 }
 

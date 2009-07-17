@@ -1,0 +1,29 @@
+pkgname=qt-dnr-widgets
+pkgver=git
+pkgrel=1
+pkgdesc="D&R Widgets for QT"
+url="http://192.168.0.9/"
+arch=(i686)
+depends=('qt-dnr')
+backup=(etc/conf.d/axum.conf etc/conf.d/ip)
+license=('GPL')
+
+source=()
+gitroot="git@192.168.0.9:"
+
+build() {
+  # git repo
+  cd "$srcdir"
+  if [ -d g/.git ]; then
+    (cd g && git pull "${gitroot}axum-processes.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-processes.git" g
+  fi
+
+  # build everything
+  cd "$srcdir/g/qt_widgets"
+  qmake
+  make
+  make INSTALL_ROOT="$pkgdir" install
+}
+
