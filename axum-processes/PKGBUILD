@@ -1,6 +1,6 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=25
+pkgrel=29
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -8,7 +8,7 @@ depends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets')
 backup=(etc/conf.d/axum.conf etc/conf.d/ip)
 license=('GPL')
 
-source=(axum-gateway axum-address axum-learner axum-engine axum-meters axum.conf ip.conf)
+source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-meters axum.conf ip.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -23,8 +23,10 @@ build() {
   # Arch scripts & config
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/var/lib/axum"
+  install -m 644 "$startdir/uniqueids" "$pkgdir/var/lib/axum/uniqueids"
   install -m 755 -d "$pkgdir/var/lib/axum/sql"
   install -m 666 -t "$pkgdir/var/lib/axum/sql" "$srcdir/g/sql/"*
+  install -m 755 "$startdir/axum-cleandb" "$pkgdir/etc/rc.d/axum-cleandb"
   install -m 755 "$startdir/axum-address" "$pkgdir/etc/rc.d/axum-address"
   install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
   install -m 755 "$startdir/axum-learner" "$pkgdir/etc/rc.d/axum-learner"
@@ -60,5 +62,9 @@ build() {
   qmake
   make
   make INSTALL_ROOT="$pkgdir" install
+
+  cd "$srcdir/g/meters/Skins"
+  install -m 755 -d "$pkgdir/var/lib/axum/skins/meters"
+  install -m 644 -t "$pkgdir/var/lib/axum/skins/meters" *
 }
 
