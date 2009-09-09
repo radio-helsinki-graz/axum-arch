@@ -1,0 +1,18 @@
+# Maintainer: Anton Prins <a.prins@d-r.nl>
+
+pkgname=fbsplash-theme-axel
+pkgver=1
+pkgrel=1
+pkgdesc="An Axel technology/Oxygen 5 fbsplash theme"
+arch=('i686')
+license="GPL"
+url="http://www.axeltechnology.nl"
+depends=('fbsplash' 'initscripts-extras-fbsplash')
+source=()
+
+build() {
+  cd ${srcdir}
+  mkdir -p ${pkgdir}/etc/splash/axel
+  cd ..
+  cp -r axel ${pkgdir}/etc/splash/
+}
