@@ -24,6 +24,10 @@ build() {
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/var/lib/axum"
   install -m 644 "$startdir/uniqueids" "$pkgdir/var/lib/axum/uniqueids"
+  install -m 644 "$startdir/OEMName" "$pkgdir/var/lib/axum/OEMName"
+  install -m 644 "$startdir/OEMCopyright" "$pkgdir/var/lib/axum/OEMCopyright"
+  install -m 644 "$startdir/OEMFullProductName" "$pkgdir/var/lib/axum/OEMFullProductName"
+  install -m 644 "$startdir/OEMShortProductName" "$pkgdir/var/lib/axum/OEMShortProductName"
   install -m 755 -d "$pkgdir/var/lib/axum/sql"
   install -m 666 -t "$pkgdir/var/lib/axum/sql" "$srcdir/g/sql/"*
   install -m 755 "$startdir/axum-cleandb" "$pkgdir/etc/rc.d/axum-cleandb"
