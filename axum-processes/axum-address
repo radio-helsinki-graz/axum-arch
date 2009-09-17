@@ -5,9 +5,11 @@
 [ -f /etc/conf.d/axum.conf ] && . /etc/conf.d/axum.conf
 
 PID=`pidof -o %PPID /usr/bin/axum-address`
+OEMName=`cat /var/lib/axum/OEMFullProductName`
+
 case "$1" in
   start)
-    stat_busy "Starting Axum Address Server"
+    stat_busy "Starting $OEMName Address Server"
     [ -z "$PID" ] && /usr/bin/axum-address -i $(axum_id address) ${AXUMADDRARGS}
     if [ $? -gt 0 ]; then
       stat_fail
@@ -18,7 +20,7 @@ case "$1" in
     fi
     ;;
   stop)
-    stat_busy "Stopping Axum Address Server"
+    stat_busy "Stopping $OEMName Address Server"
     [ ! -z "$PID" ]  && kill $PID &> /dev/null
     if [ $? -gt 0 ]; then
       stat_fail

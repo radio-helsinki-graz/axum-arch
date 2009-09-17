@@ -5,9 +5,11 @@
 [ -f /etc/conf.d/axum.conf ] && . /etc/conf.d/axum.conf
 
 PID=`pidof -o %PPID /usr/bin/axum-engine`
+OEMName=`cat /var/lib/axum/OEMFullProductName`
+
 case "$1" in
   start)
-    stat_busy "Starting Axum Engine"
+    stat_busy "Starting $OEMName Engine"
     [ -z "$PID" ] && /usr/bin/axum-engine -i $(axum_id engine) ${AXUMENGINEARGS}
     if [ $? -gt 0 ]; then
       stat_fail
@@ -18,7 +20,7 @@ case "$1" in
     fi
     ;;
   stop)
-    stat_busy "Stopping Axum Engine"
+    stat_busy "Stopping $OEMName Engine"
     [ ! -z "$PID" ]  && kill $PID &> /dev/null
     if [ $? -gt 0 ]; then
       stat_fail

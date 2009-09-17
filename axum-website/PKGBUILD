@@ -1,6 +1,6 @@
 pkgname=axum-website
 pkgver=git
-pkgrel=2
+pkgrel=3
 pkgdesc="Axum Website"
 url="http://192.168.0.9/"
 arch=(i686)
