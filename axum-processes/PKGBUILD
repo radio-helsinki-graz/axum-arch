@@ -42,6 +42,7 @@ build() {
   install -m 644 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum.logrotate" "$pkgdir/etc/logrotate.d/axum"
+  install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
   install -m 755 -d "$pkgdir/usr/bin"
 
   # build everything
