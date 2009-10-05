@@ -1,11 +1,11 @@
 pkgname=axum-processes
 pkgver=git
-pkgrel=30
+pkgrel=31
 pkgdesc="Axum Linux Processes"
 url="http://192.168.0.9/"
 arch=(i686)
 depends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets' 'ntp')
-backup=(etc/conf.d/axum.conf etc/conf.d/ip)
+backup=(etc/conf.d/axum.conf etc/conf.d/ip var/lib/axum/uniqueids var/lib/axum/OEMName var/lib/axum/OEMCopyright var/lib/axum/OEMFullProductName var/lib/axum/OEMShortProductName)
 license=('GPL')
 
 source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-meters axum.conf ip.conf)
