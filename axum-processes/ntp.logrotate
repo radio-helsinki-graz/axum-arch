@@ -1,8 +1,0 @@
-/var/log/ntp.log {
-  size 5M
-  rotate 0
-  missingok
-  postrotate
-    killall -HUP ntpd
-  endscript
-}
