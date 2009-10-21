@@ -1,6 +1,6 @@
 pkgname=oxygen5-website-rack
 pkgver=git
-pkgrel=1
+pkgrel=2
 pkgdesc="Oxygen 5 Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)

@@ -1,6 +1,6 @@
 pkgname=oxygen5-website-ui
 pkgver=git
-pkgrel=1
+pkgrel=2
 pkgdesc="Oxygen 5 website for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
