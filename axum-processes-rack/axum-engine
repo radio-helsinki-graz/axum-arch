@@ -1,0 +1,41 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+[ -f /etc/conf.d/axum-rack.conf ] && . /etc/conf.d/axum-rack.conf
+
+PID=`pidof -o %PPID /usr/bin/axum-engine`
+OEMName=`cat /var/lib/axum/OEMFullProductName`
+
+case "$1" in
+  start)
+    stat_busy "Starting $OEMName Engine"
+    [ -z "$PID" ] && /usr/bin/axum-engine -i $(axum_id engine) ${AXUMENGINEARGS}
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      echo $PID > /var/run/axum-engine.pid
+      add_daemon axum-engine
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping $OEMName Engine"
+    [ ! -z "$PID" ]  && kill $PID &> /dev/null
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      rm -f /var/run/axum-engine.pid
+      rm_daemon axum-engine
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"  
+esac
+exit 0

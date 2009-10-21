@@ -1,0 +1,63 @@
+pkgname=axum-processes-ui
+pkgver=git
+pkgrel=1
+pkgdesc="Axum Linux Processes for the user interface"
+url="http://192.168.0.9/"
+arch=(i686)
+depends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets' 'ntp')
+backup=(etc/conf.d/axum-ui.conf etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone var/lib/axum/uniqueids-ui)
+license=('GPL')
+
+source=(axum-gateway axum-meters axum-ui.conf ip.conf timezone.conf ntp.conf)
+gitroot="git@192.168.0.9:"
+
+build() {
+  # git repo
+  cd "$srcdir"
+  if [ -d g/.git ]; then
+    (cd g && git pull "${gitroot}axum-processes.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-processes.git" g
+  fi
+
+  # Arch scripts & config
+  install -m 755 -d "$pkgdir/etc/rc.d"
+  install -m 755 -d "$pkgdir/var/lib/axum"
+  install -m 644 "$startdir/uniqueids-ui" "$pkgdir/var/lib/axum/uniqueids-ui"
+  install -m 644 "$startdir/OEMName" "$pkgdir/var/lib/axum/OEMName"
+  install -m 644 "$startdir/OEMCopyright" "$pkgdir/var/lib/axum/OEMCopyright"
+  install -m 644 "$startdir/OEMFullProductName" "$pkgdir/var/lib/axum/OEMFullProductName"
+  install -m 644 "$startdir/OEMShortProductName" "$pkgdir/var/lib/axum/OEMShortProductName"
+  install -m 755 -d "$pkgdir/var/lib/axum/sql"
+  install -m 666 -t "$pkgdir/var/lib/axum/sql" "$srcdir/g/sql/"*
+  install -m 755 "$startdir/axum-gateway" "$pkgdir/etc/rc.d/axum-gateway"
+  install -m 755 "$startdir/axum-meters" "$pkgdir/etc/rc.d/axum-meters"
+  #TODO: after package install you have to add the daemons in the /etc/rc.conf
+  install -m 755 -d "$pkgdir/etc/conf.d"
+  install -m 644 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
+  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
+  install -m 666 "$startdir/ntp.conf" "$pkgdir/etc/conf.d/ntp"
+  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
+  install -m 755 -d "$pkgdir/etc/logrotate.d"
+  install -m 644 "$startdir/axum-ui.logrotate" "$pkgdir/etc/logrotate.d/axum-ui"
+  install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
+  install -m 755 -d "$pkgdir/usr/bin"
+
+  # build everything
+  cd "$srcdir/g"
+  make || return 1
+
+  # install binaries
+  install -m 755 gateway/axum-gateway "$pkgdir/usr/bin/axum-gateway"
+  install -m 755 meters/axum-meters "$pkgdir/usr/bin/axum-meters"
+
+  cd "$srcdir/g/meters"
+  qmake
+  make
+  make INSTALL_ROOT="$pkgdir" install
+
+  cd "$srcdir/g/meters/skins/dnr"
+  install -m 755 -d "$pkgdir/var/lib/axum/skins/meters"
+  install -m 644 -t "$pkgdir/var/lib/axum/skins/meters" *
+}
+

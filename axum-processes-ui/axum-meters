@@ -1,0 +1,40 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+[ -f /etc/conf.d/axum-ui.conf ] && . /etc/conf.d/axum-ui.conf
+
+PID=`pidof -o %PPID /usr/bin/axum-meters`
+OEMName=`cat /var/lib/axum/OEMFullProductName`
+case "$1" in
+  start)
+    stat_busy "Starting $OEMName Meters"
+    [ -z "$PID" ] && /usr/bin/axum-meters -i $(axum_id meters) ${AXUMMETERSARGS}
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      echo $PID > /var/run/axum-meters.pid
+      add_daemon axum-meters
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping $OEMName Meters"
+    [ ! -z "$PID" ]  && kill $PID &> /dev/null
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      rm -f /var/run/axum-meters.pid
+      rm_daemon axum-meters
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"  
+esac
+exit 0

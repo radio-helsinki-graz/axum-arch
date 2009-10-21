@@ -1,0 +1,34 @@
+pkgname=oxygen5-website-ui
+pkgver=git
+pkgrel=1
+pkgdesc="Oxygen 5 website for the user interface"
+url="http://192.168.0.9/"
+arch=(i686)
+depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs')
+backup=()
+license=('GPL')
+
+source=()
+gitroot="git@192.168.0.9:"
+
+build() {
+  # git repo
+  cd "$srcdir"
+  if [ -d g/.git ]; then
+    (cd g && git pull "${gitroot}axum-website-ui.git" master && git reset --hard)
+  else
+    git clone "${gitroot}axum-website-ui.git" g
+  fi
+
+  # Arch scripts & config
+  install -m 755 -d "$pkgdir/www"
+  install -m 755 -d "$pkgdir/etc/rc.d"
+  install -m 755 -d "$pkgdir/etc/logrotate.d"
+  install -m 755 -d "$pkgdir/etc/lighttpd" 
+  install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
+  install -m 644 "$startdir/lighttpd.conf" "$pkgdir/etc/lighttpd/lighttpd_oxygen5_website.conf"
+
+  # install webfiles
+  cp -r g/* "$pkgdir/www"
+}
+
