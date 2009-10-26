@@ -1,0 +1,64 @@
+pre_upgrade() {
+  create_perl_script
+  ./upgrade.pl $1 $2
+  remove_perl_script
+}
+
+function create_perl_script() {
+  echo "create upgrade script";
+
+echo "#!/usr/bin/perl
+
+use strict;
+use warnings;
+use DBI;
+
+my(\$new, \$old) = @ARGV;
+
+\$new =~ /git-(\d+)/;
+my \$new_version = \$1;
+
+\$old =~ /git-(\d+)/;
+my \$old_version = \$1;
+
+printf(\"upgrade database from version: \$old_version to version: \$new_version\n\");
+
+my \$i;
+for (\$i = \$old_version; \$i <= \$new_version; \$i++ ) {
+  if (\$i == 2) {
+    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
+                              PrintError => 0, RaiseError => 1,
+                              AutoCommit => 0, pg_enable_utf8 => 1,});
+
+    my \$query = \"ALTER TABLE global_config
+                  ADD startup_state boolean NOT NULL DEFAULT FALSE;\";
+
+    my \$q = \$sql->prepare(\$query);
+    \$q->execute();
+    \$sql->commit();
+
+    \$query = \"ALTER TABLE src_config
+                ADD COLUMN use_mod_preset boolean NOT NULL DEFAULT FALSE,
+                ADD COLUMN mod_on_off boolean NOT NULL DEFAULT FALSE,
+                ADD COLUMN mod_lvl float NOT NULL DEFAULT -140;\";
+
+    \$q = \$sql->prepare(\$query);
+    \$q->execute();
+    \$sql->commit();
+    \$sql->disconnect();
+
+    my \$j = \$i+1;
+    printf(\"Database upgrade version \$i to version \$j done!\n\");
+  }
+}" > upgrade.pl
+
+chmod +x upgrade.pl
+
+
+}
+
+function remove_perl_script() {
+  echo "remove upgrade script";
+  rm upgrade.pl
+}
+
