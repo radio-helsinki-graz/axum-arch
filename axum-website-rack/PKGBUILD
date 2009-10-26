@@ -1,10 +1,10 @@
 pkgname=axum-website-rack
 pkgver=git
-pkgrel=2
+pkgrel=3
 pkgdesc="Axum Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs')
+depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs' 'axum-processes-rack>=git-3')
 backup=()
 license=('GPL')
 
