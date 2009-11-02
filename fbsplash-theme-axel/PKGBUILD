@@ -2,7 +2,7 @@
 
 pkgname=fbsplash-theme-axel
 pkgver=1
-pkgrel=1
+pkgrel=2
 pkgdesc="An Axel technology/Oxygen 5 fbsplash theme"
 arch=('i686')
 license="GPL"
