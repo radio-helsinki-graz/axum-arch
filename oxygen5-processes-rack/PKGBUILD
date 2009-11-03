@@ -7,6 +7,7 @@ arch=(i686)
 aepends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets' 'ntp')
 backup=(etc/conf.d/axum-rack.conf etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone var/lib/axum/uniqueids-rack)
 license=('GPL')
+install=oxygen5-processes.install
 
 source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-rack.conf ip.conf timezone.conf ntp.conf)
 gitroot="git@192.168.0.9:"
