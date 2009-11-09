@@ -1,6 +1,6 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=4
+pkgrel=5
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
