@@ -1,6 +1,6 @@
 pkgname=axum-processes-ui
 pkgver=git
-pkgrel=2
+pkgrel=3
 pkgdesc="Axum Linux Processes for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
