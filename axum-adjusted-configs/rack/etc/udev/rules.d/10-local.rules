@@ -2,3 +2,4 @@
 # make a symlink from /dev/ttyUSB0 to /dev/gps0 for ntpd
 #
 KERNEL=="ttyUSB0",  SYMLINK+="gps0"
+KERNEL=="ttyACM0",  SYMLINK+="gps0"
