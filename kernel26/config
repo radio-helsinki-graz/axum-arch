@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.28
-# Tue Oct 13 11:47:17 2009
+# Mon Nov 23 13:12:31 2009
 #
 # CONFIG_64BIT is not set
 CONFIG_X86_32=y
@@ -1138,7 +1138,7 @@ CONFIG_USB_R8A66597_HCD=m
 #
 # USB Device Class drivers
 #
-# CONFIG_USB_ACM is not set
+CONFIG_USB_ACM=y
 # CONFIG_USB_PRINTER is not set
 # CONFIG_USB_WDM is not set
 # CONFIG_USB_TMC is not set
@@ -1216,7 +1216,7 @@ CONFIG_USB_SERIAL_PL2303=y
 # CONFIG_USB_SERIAL_TI is not set
 # CONFIG_USB_SERIAL_CYBERJACK is not set
 # CONFIG_USB_SERIAL_XIRCOM is not set
-# CONFIG_USB_SERIAL_OPTION is not set
+CONFIG_USB_SERIAL_OPTION=y
 # CONFIG_USB_SERIAL_OMNINET is not set
 # CONFIG_USB_SERIAL_DEBUG is not set
 
