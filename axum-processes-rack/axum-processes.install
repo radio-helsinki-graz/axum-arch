@@ -111,6 +111,7 @@ for (\$i = \$old_version; \$i <= \$new_version; \$i++ ) {
                               AutoCommit => 0, pg_enable_utf8 => 1,});
 
     my \$query = \"
+BEGIN;
 INSERT INTO functions VALUES ('(4,,369)', 'Control 1 mode AGC threshold', 3, 3);
 INSERT INTO functions VALUES ('(4,,370)', 'Control 2 mode AGC threshold', 3, 3);
 INSERT INTO functions VALUES ('(4,,371)', 'Control 3 mode AGC threshold', 3, 3);
@@ -129,6 +130,1002 @@ UPDATE functions SET name = 'Control 1 mode AGC amount' WHERE (func).type = 4 AN
 UPDATE functions SET name = 'Control 2 mode AGC amount' WHERE (func).type = 4 AND (func).func = 118;
 UPDATE functions SET name = 'Control 3 mode AGC amount' WHERE (func).type = 4 AND (func).func = 183;
 UPDATE functions SET name = 'Control 4 mode AGC amount' WHERE (func).type = 4 AND (func).func = 248;
+COMMIT
+    \";
+    my \$q = \$sql->prepare(\$query);
+    \$q->execute();
+    \$sql->commit();
+
+    \$sql->disconnect();
+
+    my \$j = \$i+1;
+    printf(\"Database upgrade version \$i to version \$j done!\n\");
+  }
+  if (\$i == 7) {
+    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
+                              PrintError => 0, RaiseError => 1,
+                              AutoCommit => 0, pg_enable_utf8 => 1,});
+
+    my \$query = \"
+BEGIN;
+ALTER TABLE module_config
+  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4),
+  ADD COLUMN source_a_preset smallint,
+  ADD COLUMN source_b_preset smallint,
+  ADD COLUMN source_c_preset smallint,
+  ADD COLUMN source_d_preset smallint,
+  ADD COLUMN buss_1_2_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_3_4_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_5_6_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_7_8_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_9_10_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_11_12_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_13_14_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_15_16_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_17_18_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_19_20_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_21_22_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_23_24_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_25_26_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_27_28_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_29_30_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  ADD COLUMN buss_31_32_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE];
+  ADD COLUMN d_exp_threshold float NOT NULL DEFAULT -30 CHECK(d_exp_threshold>=-50 AND d_exp_threshold<=0),
+  ADD COLUMN agc_threshold float NOT NULL DEFAULT -20 CHECK(agc_threshold>=-30 AND agc_threshold<=0),
+  ADD COLUMN mod_pan smallint NOT NULL DEFAULT 512 CHECK(mod_pan>=0 AND mod_pan<=1023);
+
+ALTER TABLE module_config
+  ADD CHECK(gain>=-20 AND gain<20),
+  ADD CHECK(agc_amount>=0 AND agc_amount<=100),
+  ADD CHECK(mod_level>=-140 AND mod_level<=10),
+
+ALTER TABLE module_config
+  RENAME COLUMN dyn_amount TO agc_amount;
+
+ALTER TABLE src_config
+  ADD COLUMN default_src_preset smallint DEFAULT NULL CHECK(default_src_preset>=1 AND default_src_preset<=1280);
+
+CREATE TABLE src_preset (
+  pos smallint NOT NULL DEFAULT 9999,
+  number smallint NOT NULL CHECK (number>=1 AND number<=1280) PRIMARY KEY,
+  label varchar(32) NOT NULL DEFAULT 'preset',
+  use_gain_preset boolean NOT NULL DEFAULT FALSE,
+  gain float NOT NULL DEFAULT 0 CHECK(gain>=-20 AND gain<=20),
+  use_lc_preset boolean NOT NULL DEFAULT FALSE,
+  lc_on_off boolean NOT NULL DEFAULT FALSE,
+  lc_frequency smallint NOT NULL DEFAULT 80 CHECK(lc_frequency>=40 AND lc_frequency<=12000),
+  use_insert_preset boolean NOT NULL DEFAULT FALSE,
+  insert_on_off boolean NOT NULL DEFAULT FALSE,
+  insert_source smallint NOT NULL DEFAULT 0,
+  use_phase_preset boolean NOT NULL DEFAULT FALSE,
+  phase_on_off boolean NOT NULL DEFAULT FALSE,
+  phase smallint NOT NULL DEFAULT 3 CHECK(phase>=0 AND phase<=3),
+  use_mono_preset boolean NOT NULL DEFAULT FALSE,
+  mono_on_off boolean NOT NULL DEFAULT FALSE,
+  mono smallint NOT NULL DEFAULT 3 CHECK(mono>=0 AND mono<=3),
+  use_eq_preset boolean NOT NULL DEFAULT FALSE,
+  eq_on_off boolean NOT NULL DEFAULT FALSE,
+  eq_band_1_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_1_range>=0 AND eq_band_1_range<=18),
+  eq_band_1_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_1_level>=-eq_band_1_range AND eq_band_1_level<=eq_band_1_range),
+  eq_band_1_freq smallint NOT NULL DEFAULT 7000 CHECK(eq_band_1_freq>=10 AND eq_band_1_freq<=20000),
+  eq_band_1_bw float NOT NULL DEFAULT 1 CHECK(eq_band_1_bw>=0.1 AND eq_band_1_bw<=10),
+  eq_band_1_slope float NOT NULL DEFAULT 1 CHECK(eq_band_1_slope>=0.1 AND eq_band_1_slope<=10),
+  eq_band_1_type smallint NOT NULL DEFAULT 4 CHECK(eq_band_1_type>=0 AND eq_band_1_type<=7),
+  eq_band_2_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_2_range>=0 AND eq_band_2_range<=18),
+  eq_band_2_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_2_level>=-eq_band_2_range AND eq_band_2_level<=eq_band_2_range),
+  eq_band_2_freq smallint NOT NULL DEFAULT 2000 CHECK(eq_band_2_freq>=10 AND eq_band_2_freq<=20000),
+  eq_band_2_bw float NOT NULL DEFAULT 3 CHECK(eq_band_2_bw>=0.1 AND eq_band_2_bw<=10),
+  eq_band_2_slope float NOT NULL DEFAULT 1 CHECK(eq_band_2_slope>=0.1 AND eq_band_2_slope<=10),
+  eq_band_2_type smallint NOT NULL DEFAULT 3 CHECK(eq_band_2_type>=0 AND eq_band_2_type<=7),
+  eq_band_3_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_3_range>=0 AND eq_band_3_range<=18),
+  eq_band_3_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_3_level>=-eq_band_3_range AND eq_band_3_level<=eq_band_3_range),
+  eq_band_3_freq smallint NOT NULL DEFAULT 300 CHECK(eq_band_3_freq>=10 AND eq_band_3_freq<=20000),
+  eq_band_3_bw float NOT NULL DEFAULT 1 CHECK(eq_band_3_bw>=0.1 AND eq_band_3_bw<=10),
+  eq_band_3_slope float NOT NULL DEFAULT 1 CHECK(eq_band_3_slope>=0.1 AND eq_band_3_slope<=10),
+  eq_band_3_type smallint NOT NULL DEFAULT 2 CHECK(eq_band_3_type>=0 AND eq_band_3_type<=7),
+  eq_band_4_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_4_range>=0 AND eq_band_4_range<=18),
+  eq_band_4_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_4_level>=-eq_band_4_range AND eq_band_4_level<=eq_band_4_range),
+  eq_band_4_freq smallint NOT NULL DEFAULT 120 CHECK(eq_band_4_freq>=10 AND eq_band_4_freq<=20000),
+  eq_band_4_bw float NOT NULL DEFAULT 1 CHECK(eq_band_4_bw>=0.1 AND eq_band_4_bw<=10),
+  eq_band_4_slope float NOT NULL DEFAULT 1 CHECK(eq_band_4_slope>=0.1 AND eq_band_4_slope<=10),
+  eq_band_4_type smallint NOT NULL DEFAULT 0 CHECK(eq_band_4_type>=0 AND eq_band_4_type<=7),
+  eq_band_5_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_5_range>=0 AND eq_band_5_range<=18),
+  eq_band_5_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_5_level>=-eq_band_5_range AND eq_band_5_level<=eq_band_5_range),
+  eq_band_5_freq smallint NOT NULL DEFAULT 12000 CHECK(eq_band_5_freq>=10 AND eq_band_5_freq<=20000),
+  eq_band_5_bw float NOT NULL DEFAULT 1 CHECK(eq_band_5_bw>=0.1 AND eq_band_5_bw<=10),
+  eq_band_5_slope float NOT NULL DEFAULT 1 CHECK(eq_band_5_slope>=0.1 AND eq_band_5_slope<=10),
+  eq_band_5_type smallint NOT NULL DEFAULT 0 CHECK(eq_band_5_type>=0 AND eq_band_5_type<=7),
+  eq_band_6_range smallint NOT NULL DEFAULT 18 CHECK(eq_band_6_range>=0 AND eq_band_6_range<=18),
+  eq_band_6_level smallint NOT NULL DEFAULT 0 CHECK(eq_band_6_level>=-eq_band_6_range AND eq_band_6_level<=eq_band_6_range),
+  eq_band_6_freq smallint NOT NULL DEFAULT 120 CHECK(eq_band_6_freq>=10 AND eq_band_6_freq<=20000),
+  eq_band_6_bw float NOT NULL DEFAULT 1 CHECK(eq_band_6_bw>=0.1 AND eq_band_6_bw<=10),
+  eq_band_6_slope float NOT NULL DEFAULT 1 CHECK(eq_band_6_slope>=0.1 AND eq_band_6_slope<=10),
+  eq_band_6_type smallint NOT NULL DEFAULT 0 CHECK(eq_band_6_type>=0 AND eq_band_6_type<=7),
+  use_dyn_preset boolean NOT NULL DEFAULT FALSE,
+  dyn_on_off boolean NOT NULL DEFAULT FALSE,
+  d_exp_threshold float NOT NULL DEFAULT -30 CHECK(d_exp_threshold>=-50 AND d_exp_threshold<=0),
+  agc_amount smallint NOT NULL DEFAULT 0 CHECK(agc_amount>=0 AND agc_amount<=100),
+  agc_threshold float NOT NULL DEFAULT -20 CHECK(agc_threshold>=-30 AND agc_threshold<0),
+  use_mod_preset boolean NOT NULL DEFAULT FALSE,
+  mod_pan smallint NOT NULL DEFAULT 512 CHECK(mod_pan>=0 AND mod_pan<=1023),
+  mod_on_off boolean NOT NULL DEFAULT FALSE,
+  mod_lvl float NOT NULL DEFAULT -140 CHECK(mod_lvl>=-140 AND mod_lvl<=10),
+  routing_preset smallint NOT NULL DEFAULT 1 CHECK(routing_preset>=1 AND routing_preset<=8)
+);
+
+INSERT INTO src_preset (  number,
+                          label,
+                          use_gain_preset,
+                          gain,
+                          use_lc_preset,
+                          lc_on_off,
+                          lc_frequency,
+                          use_insert_preset,
+                          insert_on_off,
+                          insert_source,
+                          use_phase_preset,
+                          phase_on_off,
+                          phase,
+                          use_mono_preset,
+                          mono_on_off,
+                          mono,
+                          use_eq_preset,
+                          eq_on_off,
+                          eq_band_1_range,
+                          eq_band_1_level,
+                          eq_band_1_freq,
+                          eq_band_1_bw,
+                          eq_band_1_slope,
+                          eq_band_1_type,
+                          eq_band_2_range,
+                          eq_band_2_level,
+                          eq_band_2_freq,
+                          eq_band_2_bw,
+                          eq_band_2_slope,
+                          eq_band_2_type,
+                          eq_band_3_range,
+                          eq_band_3_level,
+                          eq_band_3_freq,
+                          eq_band_3_bw,
+                          eq_band_3_slope,
+                          eq_band_3_type,
+                          eq_band_4_range,
+                          eq_band_4_level,
+                          eq_band_4_freq,
+                          eq_band_4_bw,
+                          eq_band_4_slope,
+                          eq_band_4_type,
+                          eq_band_5_range,
+                          eq_band_5_level,
+                          eq_band_5_freq,
+                          eq_band_5_bw,
+                          eq_band_5_slope,
+                          eq_band_5_type,
+                          eq_band_6_range,
+                          eq_band_6_level,
+                          eq_band_6_freq,
+                          eq_band_6_bw,
+                          eq_band_6_slope,
+                          eq_band_6_type,
+                          use_dyn_preset,
+                          dyn_on_off,
+                          agc_amount,
+                          use_mod_preset,
+                          mod_on_off,
+                          mod_lvl,
+                          routing_preset) (SELECT number,
+                                                  label,
+                                                  use_gain_preset,
+                                                  gain,
+                                                  use_lc_preset,
+                                                  lc_on_off,
+                                                  lc_frequency,
+                                                  use_insert_preset,
+                                                  insert_on_off,
+                                                  insert_source,
+                                                  use_phase_preset,
+                                                  phase_on_off,
+                                                  phase,
+                                                  use_mono_preset,
+                                                  mono_on_off,
+                                                  mono,
+                                                  use_eq_preset,
+                                                  eq_on_off,
+                                                  eq_band_1_range,
+                                                  eq_band_1_level,
+                                                  eq_band_1_freq,
+                                                  eq_band_1_bw,
+                                                  eq_band_1_slope,
+                                                  eq_band_1_type,
+                                                  eq_band_2_range,
+                                                  eq_band_2_level,
+                                                  eq_band_2_freq,
+                                                  eq_band_2_bw,
+                                                  eq_band_2_slope,
+                                                  eq_band_2_type,
+                                                  eq_band_3_range,
+                                                  eq_band_3_level,
+                                                  eq_band_3_freq,
+                                                  eq_band_3_bw,
+                                                  eq_band_3_slope,
+                                                  eq_band_3_type,
+                                                  eq_band_4_range,
+                                                  eq_band_4_level,
+                                                  eq_band_4_freq,
+                                                  eq_band_4_bw,
+                                                  eq_band_4_slope,
+                                                  eq_band_4_type,
+                                                  eq_band_5_range,
+                                                  eq_band_5_level,
+                                                  eq_band_5_freq,
+                                                  eq_band_5_bw,
+                                                  eq_band_5_slope,
+                                                  eq_band_5_type,
+                                                  eq_band_6_range,
+                                                  eq_band_6_level,
+                                                  eq_band_6_freq,
+                                                  eq_band_6_bw,
+                                                  eq_band_6_slope,
+                                                  eq_band_6_type,
+                                                  use_dyn_preset,
+                                                  dyn_on_off,
+                                                  dyn_amount,
+                                                  use_mod_preset,
+                                                  mod_on_off,
+                                                  mod_lvl,
+                                                  routing_preset FROM src_config);
+
+ALTER TABLE src_config
+  DROP COLUMN use_gain_preset,
+  DROP COLUMN gain,
+  DROP COLUMN use_lc_preset,
+  DROP COLUMN lc_on_off,
+  DROP COLUMN lc_frequency,
+  DROP COLUMN use_insert_preset,
+  DROP COLUMN insert_on_off,
+  DROP COLUMN insert_source,
+  DROP COLUMN use_phase_preset,
+  DROP COLUMN phase_on_off,
+  DROP COLUMN phase,
+  DROP COLUMN use_mono_preset,
+  DROP COLUMN mono_on_off,
+  DROP COLUMN mono,
+  DROP COLUMN use_eq_preset,
+  DROP COLUMN eq_on_off,
+  DROP COLUMN eq_band_1_range,
+  DROP COLUMN eq_band_1_level,
+  DROP COLUMN eq_band_1_freq,
+  DROP COLUMN eq_band_1_bw,
+  DROP COLUMN eq_band_1_slope,
+  DROP COLUMN eq_band_1_type,
+  DROP COLUMN eq_band_2_range,
+  DROP COLUMN eq_band_2_level,
+  DROP COLUMN eq_band_2_freq,
+  DROP COLUMN eq_band_2_bw,
+  DROP COLUMN eq_band_2_slope,
+  DROP COLUMN eq_band_2_type,
+  DROP COLUMN eq_band_3_range,
+  DROP COLUMN eq_band_3_level,
+  DROP COLUMN eq_band_3_freq,
+  DROP COLUMN eq_band_3_bw,
+  DROP COLUMN eq_band_3_slope,
+  DROP COLUMN eq_band_3_type,
+  DROP COLUMN eq_band_4_range,
+  DROP COLUMN eq_band_4_level,
+  DROP COLUMN eq_band_4_freq,
+  DROP COLUMN eq_band_4_bw,
+  DROP COLUMN eq_band_4_slope,
+  DROP COLUMN eq_band_4_type,
+  DROP COLUMN eq_band_5_range,
+  DROP COLUMN eq_band_5_level,
+  DROP COLUMN eq_band_5_freq,
+  DROP COLUMN eq_band_5_bw,
+  DROP COLUMN eq_band_5_slope,
+  DROP COLUMN eq_band_5_type,
+  DROP COLUMN eq_band_6_range,
+  DROP COLUMN eq_band_6_level,
+  DROP COLUMN eq_band_6_freq,
+  DROP COLUMN eq_band_6_bw,
+  DROP COLUMN eq_band_6_slope,
+  DROP COLUMN eq_band_6_type,
+  DROP COLUMN use_dyn_preset,
+  DROP COLUMN dyn_on_off,
+  DROP COLUMN dyn_amount,
+  DROP COLUMN use_mod_preset,
+  DROP COLUMN mod_on_off,
+  DROP COLUMN mod_lvl,
+  DROP COLUMN use_routing_preset,
+  DROP COLUMN routing_preset;
+
+ALTER TABLE module_config ADD FOREIGN KEY (source_a_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_b_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_c_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_d_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE src_config ADD FOREIGN KEY (default_src_preset) REFERENCES src_preset (number) ON DELETE SET DEFAULT;
+
+UPDATE module_config SET source_a_preset = source_a-288 WHERE source_a>288;
+UPDATE module_config SET source_b_preset = source_b-288 WHERE source_b>288;
+UPDATE module_config SET source_c_preset = source_c-288 WHERE source_c>288;
+UPDATE module_config SET source_d_preset = source_d-288 WHERE source_d>288;
+
+CREATE OR REPLACE FUNCTION src_preset_renumber() RETURNS integer AS $$
+DECLARE
+  _record RECORD;
+  cnt_pos smallint;
+BEGIN
+  cnt_pos := 1;
+  FOR _record IN ( SELECT number FROM src_preset ORDER BY pos )
+  LOOP
+    UPDATE src_preset SET pos = cnt_pos WHERE number = _record.number;
+    cnt_pos := cnt_pos + 1;
+  END LOOP;
+  RETURN cnt_pos;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION src_preset_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('src_preset_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('src_preset_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER src_preset_notify AFTER INSERT OR DELETE OR UPDATE ON src_preset FOR EACH ROW EXECUTE PROCEDURE src_preset_changed();
+
+INSERT INTO functions VALUES ('(4,,377)', 'Control 1 mode module preset', 3, 3);
+INSERT INTO functions VALUES ('(4,,378)', 'Control 2 mode module preset', 3, 3);
+INSERT INTO functions VALUES ('(4,,379)', 'Control 3 mode module preset', 3, 3);
+INSERT INTO functions VALUES ('(4,,380)', 'Control 4 mode module preset', 3, 3);
+INSERT INTO functions VALUES ('(4,,381)', 'Reset console 1 to presets', 3, 3);
+INSERT INTO functions VALUES ('(4,,382)', 'Reset console 2 to presets', 3, 3);
+INSERT INTO functions VALUES ('(4,,383)', 'Reset console 3 to presets', 3, 3);
+INSERT INTO functions VALUES ('(4,,384)', 'Reset console 4 to presets', 3, 3);
+INSERT INTO functions VALUES ('(4,,385)', 'Console preset 1', 3, 3);
+INSERT INTO functions VALUES ('(4,,386)', 'Console preset 2', 3, 3);
+INSERT INTO functions VALUES ('(4,,387)', 'Console preset 3', 3, 3);
+INSERT INTO functions VALUES ('(4,,388)', 'Console preset 4', 3, 3);
+INSERT INTO functions VALUES ('(4,,389)', 'Console preset 5', 3, 3);
+INSERT INTO functions VALUES ('(4,,390)', 'Console preset 6', 3, 3);
+INSERT INTO functions VALUES ('(4,,391)', 'Console preset 7', 3, 3);
+INSERT INTO functions VALUES ('(4,,392)', 'Console preset 8', 3, 3);
+INSERT INTO functions VALUES ('(4,,393)', 'Console preset 9', 3, 3);
+INSERT INTO functions VALUES ('(4,,394)', 'Console preset 10', 3, 3);
+INSERT INTO functions VALUES ('(4,,395)', 'Console preset 11', 3, 3);
+INSERT INTO functions VALUES ('(4,,396)', 'Console preset 12', 3, 3);
+INSERT INTO functions VALUES ('(4,,397)', 'Console preset 13', 3, 3);
+INSERT INTO functions VALUES ('(4,,398)', 'Console preset 14', 3, 3);
+INSERT INTO functions VALUES ('(4,,399)', 'Console preset 15', 3, 3);
+INSERT INTO functions VALUES ('(4,,400)', 'Console preset 16', 3, 3);
+INSERT INTO functions VALUES ('(4,,401)', 'Console preset 17', 3, 3);
+INSERT INTO functions VALUES ('(4,,402)', 'Console preset 18', 3, 3);
+INSERT INTO functions VALUES ('(4,,403)', 'Console preset 19', 3, 3);
+INSERT INTO functions VALUES ('(4,,404)', 'Console preset 20', 3, 3);
+INSERT INTO functions VALUES ('(4,,405)', 'Console preset 21', 3, 3);
+INSERT INTO functions VALUES ('(4,,406)', 'Console preset 22', 3, 3);
+INSERT INTO functions VALUES ('(4,,407)', 'Console preset 23', 3, 3);
+INSERT INTO functions VALUES ('(4,,408)', 'Console preset 24', 3, 3);
+INSERT INTO functions VALUES ('(4,,409)', 'Console preset 25', 3, 3);
+INSERT INTO functions VALUES ('(4,,410)', 'Console preset 26', 3, 3);
+INSERT INTO functions VALUES ('(4,,411)', 'Console preset 27', 3, 3);
+INSERT INTO functions VALUES ('(4,,412)', 'Console preset 28', 3, 3);
+INSERT INTO functions VALUES ('(4,,413)', 'Console preset 29', 3, 3);
+INSERT INTO functions VALUES ('(4,,414)', 'Console preset 30', 3, 3);
+INSERT INTO functions VALUES ('(4,,415)', 'Console preset 31', 3, 3);
+INSERT INTO functions VALUES ('(4,,416)', 'Console preset 32', 3, 3);
+
+INSERT INTO functions VALUES ('(0,,203)', 'Preset', 2, 4);
+INSERT INTO functions VALUES ('(0,,204)', 'Control', 2, 4);
+INSERT INTO functions VALUES ('(0,,205)', 'Control label', 0, 4);
+INSERT INTO functions VALUES ('(0,,206)', 'Control reset', 3, 0);
+
+DELETE FROM functions WHERE (func).type=4 AND (func).func=356;
+
+ALTER TABLE buss_config
+  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
+
+ALTER TABLE config
+  ADD CHECK(level>=-140 AND level<=10);
+
+ALTER TABLE monitor_buss_config
+  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
+
+ALTER TABLE monitor_buss_config
+  ADD CHECK(dim_level>=-140 AND dim_level<=0);
+
+ALTER TABLE module_config
+  ADD COLUMN new_buss_1_2_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_1_2_level>=-140 AND new_buss_1_2_level<=10),
+  ADD COLUMN new_buss_1_2_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_1_2_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_1_2_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_1_2_balance>=0 AND new_buss_1_2_balance<=1023),
+  ADD COLUMN new_buss_3_4_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_3_4_level>=-140 AND new_buss_3_4_level<=10),
+  ADD COLUMN new_buss_3_4_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_3_4_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_3_4_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_3_4_balance>=0 AND new_buss_3_4_balance<=1023),
+  ADD COLUMN new_buss_5_6_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_5_6_level>=-140 AND new_buss_5_6_level<=10),
+  ADD COLUMN new_buss_5_6_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_5_6_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_5_6_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_5_6_balance>=0 AND new_buss_5_6_balance<=1023),
+  ADD COLUMN new_buss_7_8_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_7_8_level>=-140 AND new_buss_7_8_level<=10),
+  ADD COLUMN new_buss_7_8_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_7_8_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_7_8_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_7_8_balance>=0 AND new_buss_7_8_balance<=1023),
+  ADD COLUMN new_buss_9_10_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_9_10_level>=-140 AND new_buss_9_10_level<=10),
+  ADD COLUMN new_buss_9_10_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_9_10_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_9_10_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_9_10_balance>=0 AND new_buss_9_10_balance<=1023),
+  ADD COLUMN new_buss_11_12_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_11_12_level>=-140 AND new_buss_11_12_level<=10),
+  ADD COLUMN new_buss_11_12_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_11_12_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_11_12_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_11_12_balance>=0 AND new_buss_11_12_balance<=1023),
+  ADD COLUMN new_buss_13_14_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_13_14_level>=-140 AND new_buss_13_14_level<=10),
+  ADD COLUMN new_buss_13_14_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_13_14_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_13_14_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_13_14_balance>=0 AND new_buss_13_14_balance<=1023),
+  ADD COLUMN new_buss_15_16_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_15_16_level>=-140 AND new_buss_15_16_level<=10),
+  ADD COLUMN new_buss_15_16_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_15_16_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_15_16_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_15_16_balance>=0 AND new_buss_15_16_balance<=1023),
+  ADD COLUMN new_buss_17_18_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_17_18_level>=-140 AND new_buss_17_18_level<=10),
+  ADD COLUMN new_buss_17_18_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_17_18_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_17_18_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_17_18_balance>=0 AND new_buss_17_18_balance<=1023),
+  ADD COLUMN new_buss_19_20_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_19_20_level>=-140 AND new_buss_19_20_level<=10),
+  ADD COLUMN new_buss_19_20_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_19_20_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_19_20_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_19_20_balance>=0 AND new_buss_19_20_balance<=1023),
+  ADD COLUMN new_buss_21_22_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_21_22_level>=-140 AND new_buss_21_22_level<=10),
+  ADD COLUMN new_buss_21_22_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_21_22_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_21_22_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_21_22_balance>=0 AND new_buss_21_22_balance<=1023),
+  ADD COLUMN new_buss_23_24_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_23_24_level>=-140 AND new_buss_23_24_level<=10),
+  ADD COLUMN new_buss_23_24_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_23_24_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_23_24_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_23_24_balance>=0 AND new_buss_23_24_balance<=1023),
+  ADD COLUMN new_buss_25_26_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_25_26_level>=-140 AND new_buss_25_26_level<=10),
+  ADD COLUMN new_buss_25_26_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_25_26_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_25_26_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_25_26_balance>=0 AND new_buss_25_26_balance<=1023),
+  ADD COLUMN new_buss_27_28_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_27_28_level>=-140 AND new_buss_27_28_level<=10),
+  ADD COLUMN new_buss_27_28_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_27_28_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_27_28_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_27_28_balance>=0 AND new_buss_27_28_balance<=1023),
+  ADD COLUMN new_buss_29_30_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_29_30_level>=-140 AND new_buss_29_30_level<=10),
+  ADD COLUMN new_buss_29_30_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_29_30_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_29_30_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_29_30_balance>=0 AND new_buss_29_30_balance<=1023),
+  ADD COLUMN new_buss_31_32_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_31_32_level>=-140 AND new_buss_31_32_level<=10),
+  ADD COLUMN new_buss_31_32_on_off boolean NOT NULL DEFAULT true,
+  ADD COLUMN new_buss_31_32_pre_post boolean NOT NULL DEFAULT false,
+  ADD COLUMN new_buss_31_32_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_31_32_balance>=0 AND new_buss_31_32_balance<=1023);
+
+UPDATE module_config SET new_buss_1_2_level = buss_1_2_level[1];
+UPDATE module_config SET new_buss_1_2_on_off = buss_1_2_on_off[1];
+UPDATE module_config SET new_buss_1_2_pre_post = buss_1_2_pre_post[1];
+UPDATE module_config SET new_buss_1_2_balance = buss_1_2_balance[1];
+UPDATE module_config SET new_buss_3_4_level = buss_3_4_level[1];
+UPDATE module_config SET new_buss_3_4_on_off = buss_3_4_on_off[1];
+UPDATE module_config SET new_buss_3_4_pre_post = buss_3_4_pre_post[1];
+UPDATE module_config SET new_buss_3_4_balance = buss_3_4_balance[1];
+UPDATE module_config SET new_buss_5_6_level = buss_5_6_level[1];
+UPDATE module_config SET new_buss_5_6_on_off = buss_5_6_on_off[1];
+UPDATE module_config SET new_buss_5_6_pre_post = buss_5_6_pre_post[1];
+UPDATE module_config SET new_buss_5_6_balance = buss_5_6_balance[1];
+UPDATE module_config SET new_buss_7_8_level = buss_7_8_level[1];
+UPDATE module_config SET new_buss_7_8_on_off = buss_7_8_on_off[1];
+UPDATE module_config SET new_buss_7_8_pre_post = buss_7_8_pre_post[1];
+UPDATE module_config SET new_buss_7_8_balance = buss_7_8_balance[1];
+UPDATE module_config SET new_buss_9_10_level = buss_9_10_level[1];
+UPDATE module_config SET new_buss_9_10_on_off = buss_9_10_on_off[1];
+UPDATE module_config SET new_buss_9_10_pre_post = buss_9_10_pre_post[1];
+UPDATE module_config SET new_buss_9_10_balance = buss_9_10_balance[1];
+UPDATE module_config SET new_buss_11_12_level = buss_11_12_level[1];
+UPDATE module_config SET new_buss_11_12_on_off = buss_11_12_on_off[1];
+UPDATE module_config SET new_buss_11_12_pre_post = buss_11_12_pre_post[1];
+UPDATE module_config SET new_buss_11_12_balance = buss_11_12_balance[1];
+UPDATE module_config SET new_buss_13_14_level = buss_13_14_level[1];
+UPDATE module_config SET new_buss_13_14_on_off = buss_13_14_on_off[1];
+UPDATE module_config SET new_buss_13_14_pre_post = buss_13_14_pre_post[1];
+UPDATE module_config SET new_buss_13_14_balance = buss_13_14_balance[1];
+UPDATE module_config SET new_buss_15_16_level = buss_15_16_level[1];
+UPDATE module_config SET new_buss_15_16_on_off = buss_15_16_on_off[1];
+UPDATE module_config SET new_buss_15_16_pre_post = buss_15_16_pre_post[1];
+UPDATE module_config SET new_buss_15_16_balance = buss_15_16_balance[1];
+UPDATE module_config SET new_buss_17_18_level = buss_17_18_level[1];
+UPDATE module_config SET new_buss_17_18_on_off = buss_17_18_on_off[1];
+UPDATE module_config SET new_buss_17_18_pre_post = buss_17_18_pre_post[1];
+UPDATE module_config SET new_buss_17_18_balance = buss_17_18_balance[1];
+UPDATE module_config SET new_buss_19_20_level = buss_19_20_level[1];
+UPDATE module_config SET new_buss_19_20_on_off = buss_19_20_on_off[1];
+UPDATE module_config SET new_buss_19_20_pre_post = buss_19_20_pre_post[1];
+UPDATE module_config SET new_buss_19_20_balance = buss_19_20_balance[1];
+UPDATE module_config SET new_buss_21_22_level = buss_21_22_level[1];
+UPDATE module_config SET new_buss_21_22_on_off = buss_21_22_on_off[1];
+UPDATE module_config SET new_buss_21_22_pre_post = buss_21_22_pre_post[1];
+UPDATE module_config SET new_buss_21_22_balance = buss_21_22_balance[1];
+UPDATE module_config SET new_buss_23_24_level = buss_23_24_level[1];
+UPDATE module_config SET new_buss_23_24_on_off = buss_23_24_on_off[1];
+UPDATE module_config SET new_buss_23_24_pre_post = buss_23_24_pre_post[1];
+UPDATE module_config SET new_buss_23_24_balance = buss_23_24_balance[1];
+UPDATE module_config SET new_buss_25_26_level = buss_25_26_level[1];
+UPDATE module_config SET new_buss_25_26_on_off = buss_25_26_on_off[1];
+UPDATE module_config SET new_buss_25_26_pre_post = buss_25_26_pre_post[1];
+UPDATE module_config SET new_buss_25_26_balance = buss_25_26_balance[1];
+UPDATE module_config SET new_buss_27_28_level = buss_27_28_level[1];
+UPDATE module_config SET new_buss_27_28_on_off = buss_27_28_on_off[1];
+UPDATE module_config SET new_buss_27_28_pre_post = buss_27_28_pre_post[1];
+UPDATE module_config SET new_buss_27_28_balance = buss_27_28_balance[1];
+UPDATE module_config SET new_buss_29_30_level = buss_29_30_level[1];
+UPDATE module_config SET new_buss_29_30_on_off = buss_29_30_on_off[1];
+UPDATE module_config SET new_buss_29_30_pre_post = buss_29_30_pre_post[1];
+UPDATE module_config SET new_buss_29_30_balance = buss_29_30_balance[1];
+UPDATE module_config SET new_buss_31_32_level = buss_31_32_level[1];
+UPDATE module_config SET new_buss_31_32_on_off = buss_31_32_on_off[1];
+UPDATE module_config SET new_buss_31_32_pre_post = buss_31_32_pre_post[1];
+UPDATE module_config SET new_buss_31_32_balance = buss_31_32_balance[1];
+
+ALTER TABLE module_config
+  DROP COLUMN buss_1_2_level,
+  DROP COLUMN buss_1_2_on_off,
+  DROP COLUMN buss_1_2_pre_post,
+  DROP COLUMN buss_1_2_balance,
+  DROP COLUMN buss_1_2_use_preset,
+  DROP COLUMN buss_3_4_level,
+  DROP COLUMN buss_3_4_on_off,
+  DROP COLUMN buss_3_4_pre_post,
+  DROP COLUMN buss_3_4_balance,
+  DROP COLUMN buss_3_4_use_preset,
+  DROP COLUMN buss_5_6_level,
+  DROP COLUMN buss_5_6_on_off,
+  DROP COLUMN buss_5_6_pre_post,
+  DROP COLUMN buss_5_6_balance,
+  DROP COLUMN buss_5_6_use_preset,
+  DROP COLUMN buss_7_8_level,
+  DROP COLUMN buss_7_8_on_off,
+  DROP COLUMN buss_7_8_pre_post,
+  DROP COLUMN buss_7_8_balance,
+  DROP COLUMN buss_7_8_use_preset,
+  DROP COLUMN buss_9_10_level,
+  DROP COLUMN buss_9_10_on_off,
+  DROP COLUMN buss_9_10_pre_post,
+  DROP COLUMN buss_9_10_balance,
+  DROP COLUMN buss_9_10_use_preset,
+  DROP COLUMN buss_11_12_level,
+  DROP COLUMN buss_11_12_on_off,
+  DROP COLUMN buss_11_12_pre_post,
+  DROP COLUMN buss_11_12_balance,
+  DROP COLUMN buss_11_12_use_preset,
+  DROP COLUMN buss_13_14_level,
+  DROP COLUMN buss_13_14_on_off,
+  DROP COLUMN buss_13_14_pre_post,
+  DROP COLUMN buss_13_14_balance,
+  DROP COLUMN buss_13_14_use_preset,
+  DROP COLUMN buss_15_16_level,
+  DROP COLUMN buss_15_16_on_off,
+  DROP COLUMN buss_15_16_pre_post,
+  DROP COLUMN buss_15_16_balance,
+  DROP COLUMN buss_15_16_use_preset,
+  DROP COLUMN buss_17_18_level,
+  DROP COLUMN buss_17_18_on_off,
+  DROP COLUMN buss_17_18_pre_post,
+  DROP COLUMN buss_17_18_balance,
+  DROP COLUMN buss_17_18_use_preset,
+  DROP COLUMN buss_19_20_level,
+  DROP COLUMN buss_19_20_on_off,
+  DROP COLUMN buss_19_20_pre_post,
+  DROP COLUMN buss_19_20_balance,
+  DROP COLUMN buss_19_20_use_preset,
+  DROP COLUMN buss_21_22_level,
+  DROP COLUMN buss_21_22_on_off,
+  DROP COLUMN buss_21_22_pre_post,
+  DROP COLUMN buss_21_22_balance,
+  DROP COLUMN buss_21_22_use_preset,
+  DROP COLUMN buss_23_24_level,
+  DROP COLUMN buss_23_24_on_off,
+  DROP COLUMN buss_23_24_pre_post,
+  DROP COLUMN buss_23_24_balance,
+  DROP COLUMN buss_23_24_use_preset,
+  DROP COLUMN buss_25_26_level,
+  DROP COLUMN buss_25_26_on_off,
+  DROP COLUMN buss_25_26_pre_post,
+  DROP COLUMN buss_25_26_balance,
+  DROP COLUMN buss_25_26_use_preset,
+  DROP COLUMN buss_27_28_level,
+  DROP COLUMN buss_27_28_on_off,
+  DROP COLUMN buss_27_28_pre_post,
+  DROP COLUMN buss_27_28_balance,
+  DROP COLUMN buss_27_28_use_preset,
+  DROP COLUMN buss_29_30_level,
+  DROP COLUMN buss_29_30_on_off,
+  DROP COLUMN buss_29_30_pre_post,
+  DROP COLUMN buss_29_30_balance,
+  DROP COLUMN buss_29_30_use_preset,
+  DROP COLUMN buss_31_32_level,
+  DROP COLUMN buss_31_32_on_off,
+  DROP COLUMN buss_31_32_pre_post,
+  DROP COLUMN buss_31_32_balance,
+  DROP COLUMN buss_31_32_use_preset;
+
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_1_2_level TO buss_1_2_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_1_2_on_off TO buss_1_2_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_1_2_pre_post TO buss_1_2_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_1_2_balance TO buss_1_2_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_3_4_level TO buss_3_4_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_3_4_on_off TO buss_3_4_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_3_4_pre_post TO buss_3_4_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_3_4_balance TO buss_3_4_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_5_6_level TO buss_5_6_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_5_6_on_off TO buss_5_6_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_5_6_pre_post TO buss_5_6_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_5_6_balance TO buss_5_6_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_7_8_level TO buss_7_8_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_7_8_on_off TO buss_7_8_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_7_8_pre_post TO buss_7_8_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_7_8_balance TO buss_7_8_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_9_10_level TO buss_9_10_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_9_10_on_off TO buss_9_10_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_9_10_pre_post TO buss_9_10_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_9_10_balance TO buss_9_10_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_11_12_level TO buss_11_12_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_11_12_on_off TO buss_11_12_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_11_12_pre_post TO buss_11_12_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_11_12_balance TO buss_11_12_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_13_14_level TO buss_13_14_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_13_14_on_off TO buss_13_14_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_13_14_pre_post TO buss_13_14_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_13_14_balance TO buss_13_14_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_15_16_level TO buss_15_16_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_15_16_on_off TO buss_15_16_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_15_16_pre_post TO buss_15_16_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_15_16_balance TO buss_15_16_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_17_18_level TO buss_17_18_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_17_18_on_off TO buss_17_18_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_17_18_pre_post TO buss_17_18_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_17_18_balance TO buss_17_18_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_19_20_level TO buss_19_20_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_19_20_on_off TO buss_19_20_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_19_20_pre_post TO buss_19_20_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_19_20_balance TO buss_19_20_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_21_22_level TO buss_21_22_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_21_22_on_off TO buss_21_22_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_21_22_pre_post TO buss_21_22_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_21_22_balance TO buss_21_22_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_23_24_level TO buss_23_24_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_23_24_on_off TO buss_23_24_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_23_24_pre_post TO buss_23_24_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_23_24_balance TO buss_23_24_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_25_26_level TO buss_25_26_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_25_26_on_off TO buss_25_26_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_25_26_pre_post TO buss_25_26_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_25_26_balance TO buss_25_26_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_27_28_level TO buss_27_28_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_27_28_on_off TO buss_27_28_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_27_28_pre_post TO buss_27_28_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_27_28_balance TO buss_27_28_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_29_30_level TO buss_29_30_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_29_30_on_off TO buss_29_30_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_29_30_pre_post TO buss_29_30_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_29_30_balance TO buss_29_30_balance;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_31_32_level TO buss_31_32_level;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_31_32_on_off TO buss_31_32_on_off;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_31_32_pre_post TO buss_31_32_pre_post;
+ALTER TABLE module_config
+  RENAME COLUMN new_buss_31_32_balance TO buss_31_32_balance;
+
+CREATE TABLE routing_preset (
+  mod_number smallint NOT NULL CHECK (mod_number>=1 AND mod_number<=128),
+  mod_input varchar(1) NOT NULL CHECK(mod_input='A' OR mod_input='B' OR mod_input='C' OR mod_input='D'),
+  buss_1_2_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_1_2_level float NOT NULL DEFAULT 0 CHECK(buss_1_2_level>=-140 AND buss_1_2_level<=10),
+  buss_1_2_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_1_2_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_1_2_balance smallint NOT NULL DEFAULT 512 CHECK(buss_1_2_balance>=0 AND buss_1_2_balance<=1023),
+  buss_3_4_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_3_4_level float NOT NULL DEFAULT 0 CHECK(buss_3_4_level>=-140 AND buss_3_4_level<=10),
+  buss_3_4_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_3_4_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_3_4_balance smallint NOT NULL DEFAULT 512 CHECK(buss_3_4_balance>=0 AND buss_3_4_balance<=1023),
+  buss_5_6_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_5_6_level float NOT NULL DEFAULT 0 CHECK(buss_5_6_level>=-140 AND buss_5_6_level<=10),
+  buss_5_6_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_5_6_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_5_6_balance smallint NOT NULL DEFAULT 512 CHECK(buss_5_6_balance>=0 AND buss_5_6_balance<=1023),
+  buss_7_8_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_7_8_level float NOT NULL DEFAULT 0 CHECK(buss_7_8_level>=-140 AND buss_7_8_level<=10),
+  buss_7_8_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_7_8_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_7_8_balance smallint NOT NULL DEFAULT 512 CHECK(buss_7_8_balance>=0 AND buss_7_8_balance<=1023),
+  buss_9_10_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_9_10_level float NOT NULL DEFAULT 0 CHECK(buss_9_10_level>=-140 AND buss_9_10_level<=10),
+  buss_9_10_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_9_10_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_9_10_balance smallint NOT NULL DEFAULT 512 CHECK(buss_9_10_balance>=0 AND buss_9_10_balance<=1023),
+  buss_11_12_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_11_12_level float NOT NULL DEFAULT 0 CHECK(buss_11_12_level>=-140 AND buss_11_12_level<=10),
+  buss_11_12_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_11_12_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_11_12_balance smallint NOT NULL DEFAULT 512 CHECK(buss_11_12_balance>=0 AND buss_11_12_balance<=1023),
+  buss_13_14_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_13_14_level float NOT NULL DEFAULT 0 CHECK(buss_13_14_level>=-140 AND buss_13_14_level<=10),
+  buss_13_14_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_13_14_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_13_14_balance smallint NOT NULL DEFAULT 512 CHECK(buss_13_14_balance>=0 AND buss_13_14_balance<=1023),
+  buss_15_16_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_15_16_level float NOT NULL DEFAULT 0 CHECK(buss_15_16_level>=-140 AND buss_15_16_level<=10),
+  buss_15_16_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_15_16_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_15_16_balance smallint NOT NULL DEFAULT 512 CHECK(buss_15_16_balance>=0 AND buss_15_16_balance<=1023),
+  buss_17_18_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_17_18_level float NOT NULL DEFAULT 0 CHECK(buss_17_18_level>=-140 AND buss_17_18_level<=10),
+  buss_17_18_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_17_18_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_17_18_balance smallint NOT NULL DEFAULT 512 CHECK(buss_17_18_balance>=0 AND buss_17_18_balance<=1023),
+  buss_19_20_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_19_20_level float NOT NULL DEFAULT 0 CHECK(buss_19_20_level>=-140 AND buss_19_20_level<=10),
+  buss_19_20_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_19_20_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_19_20_balance smallint NOT NULL DEFAULT 512 CHECK(buss_19_20_balance>=0 AND buss_19_20_balance<=1023),
+  buss_21_22_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_21_22_level float NOT NULL DEFAULT 0 CHECK(buss_21_22_level>=-140 AND buss_21_22_level<=10),
+  buss_21_22_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_21_22_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_21_22_balance smallint NOT NULL DEFAULT 512 CHECK(buss_21_22_balance>=0 AND buss_21_22_balance<=1023),
+  buss_23_24_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_23_24_level float NOT NULL DEFAULT 0 CHECK(buss_23_24_level>=-140 AND buss_23_24_level<=10),
+  buss_23_24_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_23_24_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_23_24_balance smallint NOT NULL DEFAULT 512 CHECK(buss_23_24_balance>=0 AND buss_23_24_balance<=1023),
+  buss_25_26_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_25_26_level float NOT NULL DEFAULT 0 CHECK(buss_25_26_level>=-140 AND buss_25_26_level<=10),
+  buss_25_26_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_25_26_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_25_26_balance smallint NOT NULL DEFAULT 512 CHECK(buss_25_26_balance>=0 AND buss_25_26_balance<=1023),
+  buss_27_28_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_27_28_level float NOT NULL DEFAULT 0 CHECK(buss_27_28_level>=-140 AND buss_27_28_level<=10),
+  buss_27_28_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_27_28_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_27_28_balance smallint NOT NULL DEFAULT 512 CHECK(buss_27_28_balance>=0 AND buss_27_28_balance<=1023),
+  buss_29_30_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_29_30_level float NOT NULL DEFAULT 0 CHECK(buss_29_30_level>=-140 AND buss_29_30_level<=10),
+  buss_29_30_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_29_30_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_29_30_balance smallint NOT NULL DEFAULT 512 CHECK(buss_29_30_balance>=0 AND buss_29_30_balance<=1023),
+  buss_31_32_use_preset boolean NOT NULL DEFAULT FALSE,
+  buss_31_32_level float NOT NULL DEFAULT 0 CHECK(buss_31_32_level>=-140 AND buss_31_32_level<=10),
+  buss_31_32_on_off boolean NOT NULL DEFAULT TRUE,
+  buss_31_32_pre_post boolean NOT NULL DEFAULT FALSE,
+  buss_31_32_balance smallint NOT NULL DEFAULT 512 CHECK(buss_31_32_balance>=0 AND buss_31_32_balance<=1023),
+  PRIMARY KEY(mod_number, mod_input)
+);
+
+INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'A' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'B' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'C' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'D' FROM generate_series(1, 128);
+
+ALTER TABLE module_config
+  ADD COLUMN use_insert_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_gain_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_lc_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_phase_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_mono_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_eq_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_dyn_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN use_mod_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_1_2_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_3_4_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_5_6_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_7_8_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_9_10_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_11_12_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_13_14_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_15_16_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_17_18_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_19_20_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_21_22_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_23_24_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_25_26_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_27_28_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_29_30_use_preset boolean NOT NULL DEFAULT FALSE,
+  ADD COLUMN buss_31_32_use_preset boolean NOT NULL DEFAULT FALSE;
+
+CREATE TABLE buss_preset (
+  pos smallint NOT NULL DEFAULT 9999,
+  number smallint NOT NULL CHECK (number>=1 AND number<=1280) PRIMARY KEY,
+  label varchar(32) NOT NULL,
+);
+
+CREATE TABLE buss_preset_rows (
+  number smallint NOT NULL CHECK(number>=1 AND number<=1280),
+  buss smallint NOT NULL CHECK(buss>=1 AND buss<=16),
+  use_preset boolean NOT NULL DEFAULT FALSE,
+  level float NOT NULL DEFAULT 0.0,
+  on_off boolean NOT NULL DEFAULT TRUE,
+  PRIMARY KEY(number, buss)
+);
+
+CREATE TABLE monitor_buss_preset_rows (
+  number smallint NOT NULL CHECK(number>=1 AND number<=1280),
+  monitor_buss smallint NOT NULL CHECK(monitor_buss>=1 AND monitor_buss<=16),
+  use_preset boolean[24] NOT NULL DEFAULT ARRAY[FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  on_off boolean[24] NOT NULL DEFAULT ARRAY[FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
+  PRIMARY KEY(number, monitor_buss)
+)
+
+CREATE TABLE console_preset (
+  pos smallint NOT NULL DEFAULT 9999,
+  number smallint NOT NULL CHECK(number>=1 AND number<=32) PRIMARY KEY,
+  label varchar(32) NOT NULL DEFAULT 'Preset',
+  input varchar(1) NOT NULL DEFAULT 'A' CHECK(input='A' OR input='B' OR input='C' OR input='D'),
+  buss_preset smallint CHECK(number>=1 AND number<=1280)
+);
+
+ALTER TABLE buss_preset_rows   ADD FOREIGN KEY (number)        REFERENCES buss_preset (number)    ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE extern_src_config
+  ADD COLUMN safe1 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe2 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe3 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe4 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe5 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe6 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe7 boolean NOT NULL DEFAULT TRUE,
+  ADD COLUMN safe8 boolean NOT NULL DEFAULT TRUE;
+
+CREATE OR REPLACE FUNCTION buss_preset_renumber() RETURNS integer AS $$
+DECLARE
+  _record RECORD;
+  cnt_pos smallint;
+BEGIN
+  cnt_pos := 1;
+  FOR _record IN ( SELECT number FROM buss_preset ORDER BY pos )
+  LOOP
+    UPDATE buss_preset SET pos = cnt_pos WHERE number = _record.number;
+    cnt_pos := cnt_pos + 1;
+  END LOOP;
+  RETURN cnt_pos;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION routing_preset_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('routing_preset_changed', OLD.mod_number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('routing_preset_changed', NEW.mod_number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION buss_preset_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION buss_preset_rows_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_rows_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_rows_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION monitor_buss_preset_rows_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('monitor_buss_preset_rows_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('monitor_buss_preset_rows_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION console_preset_changed() RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    INSERT INTO recent_changes (change, arguments) VALUES('console_preset_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('console_preset_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER routing_preset_notify            AFTER INSERT OR DELETE OR UPDATE ON routing_preset            FOR EACH ROW EXECUTE PROCEDURE routing_preset_changed();
+CREATE TRIGGER buss_preset_notify               AFTER INSERT OR DELETE OR UPDATE ON buss_preset               FOR EACH ROW EXECUTE PROCEDURE buss_preset_changed();
+CREATE TRIGGER buss_preset_rows_notify          AFTER INSERT OR DELETE OR UPDATE ON buss_preset_rows          FOR EACH ROW EXECUTE PROCEDURE buss_preset_rows_changed();
+CREATE TRIGGER monitor_buss_preset_rows_notify  AFTER INSERT OR DELETE OR UPDATE ON monitor_buss_preset_rows  FOR EACH ROW EXECUTE PROCEDURE monitor_buss_preset_rows_changed();
+CREATE TRIGGER console_preset_notify            AFTER INSERT OR DELETE OR UPDATE ON console_preset            FOR EACH ROW EXECUTE PROCEDURE console_preset_changed();
+
+ALTER TABLE global_config
+  DROP COLUMN routing_preset_1_label,
+  DROP COLUMN routing_preset_2_label,
+  DROP COLUMN routing_preset_3_label,
+  DROP COLUMN routing_preset_4_label,
+  DROP COLUMN routing_preset_5_label,
+  DROP COLUMN routing_preset_6_label,
+  DROP COLUMN routing_preset_7_label,
+  DROP COLUMN routing_preset_8_label,
+  DROP COLUMN use_module_defaults;
+
+COMMIT;
     \";
     my \$q = \$sql->prepare(\$query);
     \$q->execute();
