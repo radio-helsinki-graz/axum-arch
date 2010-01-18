@@ -70,7 +70,7 @@ my \$new_version = \$1;
 \$old =~ /git-(\d+)/;
 my \$old_version = \$1;
 
-printf(\"upgrade database from version: \$old_version to version: \$new_version\n\");
+printf(\"upgrade database from version: \$old_version to version: \$new_version\n\"); $| = 1;
 
 my \$i;
 for (\$i = \$old_version; \$i <= \$new_version; \$i++ ) {
