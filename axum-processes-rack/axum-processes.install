@@ -1,13 +1,62 @@
+# measured diskspace used 70Mb
+# measured time used: 12 minutes
+
 pre_upgrade() {
+
+  echo "Current date/time: $(date)"
+  echo "Be patient, the upgrade may take some minutes..."
+
+  MIN_SIZE=102400
+  df_result=$(df | grep '/dev/sda1' | awk '{print $4}')
+
+  if [ $df_result -lt $MIN_SIZE ]
+  then
+    echo "Not enough diskspace for upgrade, 100M required!"
+    echo "you may run 'pacman -Sc' or 'pacman -Scc'..."
+    return 1
+  else
+    echo "$df_result of free space"
+  fi
+
+  #removed backup-file, use programmed defaults the first time
+  rm /var/lib/axum/.backup
+
+  /etc/rc.d/lighttpd stop
+  /etc/rc.d/ntpd stop
+  /etc/rc.d/crond stop
+  /etc/rc.d/axum-engine stop
+  /etc/rc.d/axum-learner stop
+  /etc/rc.d/axum-address stop
+  /etc/rc.d/axum-gateway stop
+
+  #make as much free space as possible
+  vacuumdb -af -U postgres
+
   create_perl_script
   ./upgrade.pl $1 $2
   remove_perl_script
 }
 
+post_upgrade() {
+
+  #make sure delete rows are 'removed'
+  vacuumdb -af -U postgres
+
+  /etc/rc.d/axum-gateway start
+  /etc/rc.d/axum-address start
+  /etc/rc.d/axum-learner start
+  /etc/rc.d/axum-engine start
+  /etc/rc.d/crond start
+  /etc/rc.d/ntpd start
+  /etc/rc.d/lighttpd start
+
+  echo "Upgrade finished at date/time: $(date)"
+}
+
 function create_perl_script() {
   echo "create upgrade script";
 
-echo "#!/usr/bin/perl
+  echo "#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -1140,11 +1189,11 @@ COMMIT;
 
 chmod +x upgrade.pl
 
-
 }
 
 function remove_perl_script() {
   echo "remove upgrade script";
+  cp upgrade.pl /root/upgrade.pl
   rm upgrade.pl
 }
 
