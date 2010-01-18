@@ -218,18 +218,18 @@ ALTER TABLE module_config
   ADD COLUMN buss_25_26_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_27_28_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_29_30_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
-  ADD COLUMN buss_31_32_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE];
+  ADD COLUMN buss_31_32_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN d_exp_threshold float NOT NULL DEFAULT -30 CHECK(d_exp_threshold>=-50 AND d_exp_threshold<=0),
   ADD COLUMN agc_threshold float NOT NULL DEFAULT -20 CHECK(agc_threshold>=-30 AND agc_threshold<=0),
   ADD COLUMN mod_pan smallint NOT NULL DEFAULT 512 CHECK(mod_pan>=0 AND mod_pan<=1023);
 
 ALTER TABLE module_config
-  ADD CHECK(gain>=-20 AND gain<20),
-  ADD CHECK(agc_amount>=0 AND agc_amount<=100),
-  ADD CHECK(mod_level>=-140 AND mod_level<=10),
+  RENAME COLUMN dyn_amount TO agc_amount;
 
 ALTER TABLE module_config
-  RENAME COLUMN dyn_amount TO agc_amount;
+  ADD CHECK(gain>=-20 AND gain<20),
+  ADD CHECK(agc_amount>=0 AND agc_amount<=100),
+  ADD CHECK(mod_level>=-140 AND mod_level<=10);
 
 ALTER TABLE src_config
   ADD COLUMN default_src_preset smallint DEFAULT NULL CHECK(default_src_preset>=1 AND default_src_preset<=1280);
@@ -497,7 +497,7 @@ UPDATE module_config SET source_b_preset = source_b-288 WHERE source_b>288;
 UPDATE module_config SET source_c_preset = source_c-288 WHERE source_c>288;
 UPDATE module_config SET source_d_preset = source_d-288 WHERE source_d>288;
 
-CREATE OR REPLACE FUNCTION src_preset_renumber() RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION src_preset_renumber() RETURNS integer AS \\\$\\\$
 DECLARE
   _record RECORD;
   cnt_pos smallint;
@@ -510,9 +510,9 @@ BEGIN
   END LOOP;
   RETURN cnt_pos;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION src_preset_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION src_preset_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('src_preset_changed', OLD.number::text);
@@ -521,7 +521,7 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
 CREATE TRIGGER src_preset_notify AFTER INSERT OR DELETE OR UPDATE ON src_preset FOR EACH ROW EXECUTE PROCEDURE src_preset_changed();
 
@@ -576,7 +576,7 @@ DELETE FROM functions WHERE (func).type=4 AND (func).func=356;
 ALTER TABLE buss_config
   ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
 
-ALTER TABLE config
+ALTER TABLE buss_config
   ADD CHECK(level>=-140 AND level<=10);
 
 ALTER TABLE monitor_buss_config
@@ -589,63 +589,93 @@ ALTER TABLE module_config
   ADD COLUMN new_buss_1_2_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_1_2_level>=-140 AND new_buss_1_2_level<=10),
   ADD COLUMN new_buss_1_2_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_1_2_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_1_2_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_1_2_balance>=0 AND new_buss_1_2_balance<=1023),
+  ADD COLUMN new_buss_1_2_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_1_2_balance>=0 AND new_buss_1_2_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_3_4_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_3_4_level>=-140 AND new_buss_3_4_level<=10),
   ADD COLUMN new_buss_3_4_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_3_4_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_3_4_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_3_4_balance>=0 AND new_buss_3_4_balance<=1023),
+  ADD COLUMN new_buss_3_4_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_3_4_balance>=0 AND new_buss_3_4_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_5_6_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_5_6_level>=-140 AND new_buss_5_6_level<=10),
   ADD COLUMN new_buss_5_6_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_5_6_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_5_6_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_5_6_balance>=0 AND new_buss_5_6_balance<=1023),
+  ADD COLUMN new_buss_5_6_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_5_6_balance>=0 AND new_buss_5_6_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_7_8_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_7_8_level>=-140 AND new_buss_7_8_level<=10),
   ADD COLUMN new_buss_7_8_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_7_8_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_7_8_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_7_8_balance>=0 AND new_buss_7_8_balance<=1023),
+  ADD COLUMN new_buss_7_8_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_7_8_balance>=0 AND new_buss_7_8_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_9_10_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_9_10_level>=-140 AND new_buss_9_10_level<=10),
   ADD COLUMN new_buss_9_10_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_9_10_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_9_10_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_9_10_balance>=0 AND new_buss_9_10_balance<=1023),
+  ADD COLUMN new_buss_9_10_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_9_10_balance>=0 AND new_buss_9_10_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_11_12_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_11_12_level>=-140 AND new_buss_11_12_level<=10),
   ADD COLUMN new_buss_11_12_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_11_12_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_11_12_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_11_12_balance>=0 AND new_buss_11_12_balance<=1023),
+  ADD COLUMN new_buss_11_12_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_11_12_balance>=0 AND new_buss_11_12_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_13_14_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_13_14_level>=-140 AND new_buss_13_14_level<=10),
   ADD COLUMN new_buss_13_14_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_13_14_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_13_14_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_13_14_balance>=0 AND new_buss_13_14_balance<=1023),
+  ADD COLUMN new_buss_13_14_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_13_14_balance>=0 AND new_buss_13_14_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_15_16_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_15_16_level>=-140 AND new_buss_15_16_level<=10),
   ADD COLUMN new_buss_15_16_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_15_16_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_15_16_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_15_16_balance>=0 AND new_buss_15_16_balance<=1023),
+  ADD COLUMN new_buss_15_16_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_15_16_balance>=0 AND new_buss_15_16_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_17_18_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_17_18_level>=-140 AND new_buss_17_18_level<=10),
   ADD COLUMN new_buss_17_18_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_17_18_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_17_18_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_17_18_balance>=0 AND new_buss_17_18_balance<=1023),
+  ADD COLUMN new_buss_17_18_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_17_18_balance>=0 AND new_buss_17_18_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_19_20_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_19_20_level>=-140 AND new_buss_19_20_level<=10),
   ADD COLUMN new_buss_19_20_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_19_20_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_19_20_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_19_20_balance>=0 AND new_buss_19_20_balance<=1023),
+  ADD COLUMN new_buss_19_20_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_19_20_balance>=0 AND new_buss_19_20_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_21_22_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_21_22_level>=-140 AND new_buss_21_22_level<=10),
   ADD COLUMN new_buss_21_22_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_21_22_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_21_22_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_21_22_balance>=0 AND new_buss_21_22_balance<=1023),
+  ADD COLUMN new_buss_21_22_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_21_22_balance>=0 AND new_buss_21_22_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_23_24_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_23_24_level>=-140 AND new_buss_23_24_level<=10),
   ADD COLUMN new_buss_23_24_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_23_24_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_23_24_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_23_24_balance>=0 AND new_buss_23_24_balance<=1023),
+  ADD COLUMN new_buss_23_24_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_23_24_balance>=0 AND new_buss_23_24_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_25_26_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_25_26_level>=-140 AND new_buss_25_26_level<=10),
   ADD COLUMN new_buss_25_26_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_25_26_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_25_26_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_25_26_balance>=0 AND new_buss_25_26_balance<=1023),
+  ADD COLUMN new_buss_25_26_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_25_26_balance>=0 AND new_buss_25_26_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_27_28_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_27_28_level>=-140 AND new_buss_27_28_level<=10),
   ADD COLUMN new_buss_27_28_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_27_28_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_27_28_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_27_28_balance>=0 AND new_buss_27_28_balance<=1023),
+  ADD COLUMN new_buss_27_28_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_27_28_balance>=0 AND new_buss_27_28_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_29_30_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_29_30_level>=-140 AND new_buss_29_30_level<=10),
   ADD COLUMN new_buss_29_30_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_29_30_pre_post boolean NOT NULL DEFAULT false,
-  ADD COLUMN new_buss_29_30_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_29_30_balance>=0 AND new_buss_29_30_balance<=1023),
+  ADD COLUMN new_buss_29_30_balance smallint NOT NULL DEFAULT 512 CHECK(new_buss_29_30_balance>=0 AND new_buss_29_30_balance<=1023);
+
+ALTER TABLE module_config
   ADD COLUMN new_buss_31_32_level double precision NOT NULL DEFAULT 0 CHECK(new_buss_31_32_level>=-140 AND new_buss_31_32_level<=10),
   ADD COLUMN new_buss_31_32_on_off boolean NOT NULL DEFAULT true,
   ADD COLUMN new_buss_31_32_pre_post boolean NOT NULL DEFAULT false,
@@ -929,7 +959,7 @@ ALTER TABLE module_config
 
 CREATE TABLE routing_preset (
   mod_number smallint NOT NULL CHECK (mod_number>=1 AND mod_number<=128),
-  mod_input varchar(1) NOT NULL CHECK(mod_input='A' OR mod_input='B' OR mod_input='C' OR mod_input='D'),
+  mod_preset varchar(1) NOT NULL CHECK(mod_preset='A' OR mod_preset='B' OR mod_preset='C' OR mod_preset='D'),
   buss_1_2_use_preset boolean NOT NULL DEFAULT FALSE,
   buss_1_2_level float NOT NULL DEFAULT 0 CHECK(buss_1_2_level>=-140 AND buss_1_2_level<=10),
   buss_1_2_on_off boolean NOT NULL DEFAULT TRUE,
@@ -1010,13 +1040,13 @@ CREATE TABLE routing_preset (
   buss_31_32_on_off boolean NOT NULL DEFAULT TRUE,
   buss_31_32_pre_post boolean NOT NULL DEFAULT FALSE,
   buss_31_32_balance smallint NOT NULL DEFAULT 512 CHECK(buss_31_32_balance>=0 AND buss_31_32_balance<=1023),
-  PRIMARY KEY(mod_number, mod_input)
+  PRIMARY KEY(mod_number, mod_preset)
 );
 
-INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'A' FROM generate_series(1, 128);
-INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'B' FROM generate_series(1, 128);
-INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'C' FROM generate_series(1, 128);
-INSERT INTO routing_preset (mod_number, mod_input) SELECT *, 'D' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'A' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'B' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'C' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'D' FROM generate_series(1, 128);
 
 ALTER TABLE module_config
   ADD COLUMN use_insert_preset boolean NOT NULL DEFAULT FALSE,
@@ -1047,7 +1077,7 @@ ALTER TABLE module_config
 CREATE TABLE buss_preset (
   pos smallint NOT NULL DEFAULT 9999,
   number smallint NOT NULL CHECK (number>=1 AND number<=1280) PRIMARY KEY,
-  label varchar(32) NOT NULL,
+  label varchar(32) NOT NULL
 );
 
 CREATE TABLE buss_preset_rows (
@@ -1065,13 +1095,17 @@ CREATE TABLE monitor_buss_preset_rows (
   use_preset boolean[24] NOT NULL DEFAULT ARRAY[FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   on_off boolean[24] NOT NULL DEFAULT ARRAY[FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   PRIMARY KEY(number, monitor_buss)
-)
+);
 
 CREATE TABLE console_preset (
   pos smallint NOT NULL DEFAULT 9999,
   number smallint NOT NULL CHECK(number>=1 AND number<=32) PRIMARY KEY,
   label varchar(32) NOT NULL DEFAULT 'Preset',
-  input varchar(1) NOT NULL DEFAULT 'A' CHECK(input='A' OR input='B' OR input='C' OR input='D'),
+  console1 boolean NOT NULL DEFAULT FALSE,
+  console2 boolean NOT NULL DEFAULT FALSE,
+  console3 boolean NOT NULL DEFAULT FALSE,
+  console4 boolean NOT NULL DEFAULT FALSE,
+  mod_preset varchar(1) DEFAULT 'A' CHECK(mod_preset='A' OR mod_preset='B' OR mod_preset='C' OR mod_preset='D'),
   buss_preset smallint CHECK(number>=1 AND number<=1280)
 );
 
@@ -1087,7 +1121,7 @@ ALTER TABLE extern_src_config
   ADD COLUMN safe7 boolean NOT NULL DEFAULT TRUE,
   ADD COLUMN safe8 boolean NOT NULL DEFAULT TRUE;
 
-CREATE OR REPLACE FUNCTION buss_preset_renumber() RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION buss_preset_renumber() RETURNS integer AS \\\$\\\$
 DECLARE
   _record RECORD;
   cnt_pos smallint;
@@ -1100,9 +1134,9 @@ BEGIN
   END LOOP;
   RETURN cnt_pos;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION routing_preset_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION routing_preset_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('routing_preset_changed', OLD.mod_number::text);
@@ -1111,9 +1145,9 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION buss_preset_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION buss_preset_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_changed', OLD.number::text);
@@ -1122,9 +1156,9 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION buss_preset_rows_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION buss_preset_rows_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('buss_preset_rows_changed', OLD.number::text);
@@ -1133,9 +1167,9 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION monitor_buss_preset_rows_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION monitor_buss_preset_rows_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('monitor_buss_preset_rows_changed', OLD.number::text);
@@ -1144,9 +1178,9 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION console_preset_changed() RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION console_preset_changed() RETURNS trigger AS \\\$\\\$
 BEGIN
   IF TG_OP = 'DELETE' THEN
     INSERT INTO recent_changes (change, arguments) VALUES('console_preset_changed', OLD.number::text);
@@ -1155,7 +1189,22 @@ BEGIN
   END IF;
   RETURN NULL;
 END
-$$ LANGUAGE plpgsql;
+\\\$\\\$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION console_preset_renumber() RETURNS integer AS \\\$\\\$
+DECLARE
+  _record RECORD;
+  cnt_pos smallint;
+BEGIN
+  cnt_pos := 1;
+  FOR _record IN ( SELECT number FROM console_preset ORDER BY pos )
+  LOOP
+    UPDATE console_preset SET pos = cnt_pos WHERE number = _record.number;
+    cnt_pos := cnt_pos + 1;
+  END LOOP;
+  RETURN cnt_pos;
+END
+\\\$\\\$ LANGUAGE plpgsql;
 
 CREATE TRIGGER routing_preset_notify            AFTER INSERT OR DELETE OR UPDATE ON routing_preset            FOR EACH ROW EXECUTE PROCEDURE routing_preset_changed();
 CREATE TRIGGER buss_preset_notify               AFTER INSERT OR DELETE OR UPDATE ON buss_preset               FOR EACH ROW EXECUTE PROCEDURE buss_preset_changed();
