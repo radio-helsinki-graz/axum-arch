@@ -573,6 +573,26 @@ INSERT INTO functions VALUES ('(0,,206)', 'Control reset', 3, 0);
 
 DELETE FROM functions WHERE (func).type=4 AND (func).func=356;
 
+UPDATE module_config SET buss_1_2_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 1;
+UPDATE module_config SET buss_3_4_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 2;
+UPDATE module_config SET buss_5_6_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 3;
+UPDATE module_config SET buss_7_8_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 4;
+UPDATE module_config SET buss_9_10_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 5;
+UPDATE module_config SET buss_11_12_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 6;
+UPDATE module_config SET buss_13_14_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 7;
+UPDATE module_config SET buss_15_16_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 8;
+UPDATE module_config SET buss_17_18_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 9;
+UPDATE module_config SET buss_19_20_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 10;
+UPDATE module_config SET buss_21_22_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 11;
+UPDATE module_config SET buss_23_24_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 12;
+UPDATE module_config SET buss_25_26_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 13;
+UPDATE module_config SET buss_27_28_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 14;
+UPDATE module_config SET buss_29_30_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 15;
+UPDATE module_config SET buss_31_32_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 16;
+
+ALTER TABLE buss_config
+  DROP COLUMN pre_level;
+
 ALTER TABLE buss_config
   ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
 
