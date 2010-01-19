@@ -1,0 +1,49 @@
+This document describes the procedure to perform an upgrade on the axum-processes-rack.
+You can logon to the system local or from remote (ssh).
+
+- SSH can be used from linux or with the Windows program PuTTY.
+
+When made a ssh connection you can logon using the following information:
+user: root
+pass: axum
+
+Now you will see the prompt '#' where you can type commands.
+
+First we will try to free as much diskspace as possible:
+
+We clean the package history of unused packages:
+  # pacman -Sc
+
+With the command 'df' we check if we have less than 90% of space.
+  # df
+
+Check the Use% for /dev/sda1 in the printed result of 'df', here as example:
+  Filesystem           1K-blocks      Used Available Use% Mounted on
+  /dev/sda1              1011992    752308    208680  79% /
+  none                    111796         0    111796   0% /dev/shm
+
+If there is more space used you may:
+1) remove 'log-files' if you don't required them at this moment, and check df again.
+  # rm /var/log/*
+2) remove the older version from the installed packages:
+  # pacman -Scc
+
+Now you should have enough space to start the upgrade which can be done by using
+a tarball (is a linux compressed-file) or via the dnr-package-server. 
+This upgrade may take several minutes (up to 15 minutes)!
+
+1) using the tarball:
+  # pacman -U axum-processes-rack-git-8-i686.pkg.tar.gz
+  # pacman -U axum-website-rack-git-7-i686.pkg.tar.gz
+
+2) using the server:
+  # pacman -Syu
+
+after this upgrade can free more diskspace by using the following commands:
+
+  # pacman -R qt-dnr-widgets qt-dnr libjpeg libpng
+  # pacman -Sc
+
+Now the upgrade is finished!
+
+  
