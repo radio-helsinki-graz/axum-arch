@@ -7,6 +7,7 @@ arch=(i686)
 depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs' 'axum-processes-rack>=git-3')
 backup=()
 license=('GPL')
+install=axum-website.install
 
 source=()
 gitroot="git@192.168.0.9:"
