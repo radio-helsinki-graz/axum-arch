@@ -41,7 +41,10 @@ This upgrade may take several minutes (up to 15 minutes)!
 
 after this upgrade can free more diskspace by using the following commands:
 
-  # pacman -R qt-dnr-widgets qt-dnr libjpeg libpng
+  # pacman -Rs qt-dnr-widgets
+
+You can confirm the removel of 'qt-dnr-widgets qt-dnr libjpeg libpng'
+
   # pacman -Sc
 
 Now the upgrade is finished!
