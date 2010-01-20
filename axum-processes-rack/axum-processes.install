@@ -199,10 +199,18 @@ COMMIT
 BEGIN;
 ALTER TABLE module_config
   ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4),
+  ADD COLUMN source_e smallint NOT NULL DEFAULT 0,
+  ADD COLUMN source_f smallint NOT NULL DEFAULT 0,
+  ADD COLUMN source_g smallint NOT NULL DEFAULT 0,
+  ADD COLUMN source_h smallint NOT NULL DEFAULT 0,
   ADD COLUMN source_a_preset smallint,
   ADD COLUMN source_b_preset smallint,
   ADD COLUMN source_c_preset smallint,
   ADD COLUMN source_d_preset smallint,
+  ADD COLUMN source_e_preset smallint,
+  ADD COLUMN source_f_preset smallint,
+  ADD COLUMN source_g_preset smallint,
+  ADD COLUMN source_h_preset smallint,
   ADD COLUMN buss_1_2_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_3_4_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_5_6_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
@@ -489,6 +497,10 @@ ALTER TABLE module_config ADD FOREIGN KEY (source_a_preset) REFERENCES src_prese
 ALTER TABLE module_config ADD FOREIGN KEY (source_b_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
 ALTER TABLE module_config ADD FOREIGN KEY (source_c_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
 ALTER TABLE module_config ADD FOREIGN KEY (source_d_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_e_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_f_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_g_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
+ALTER TABLE module_config ADD FOREIGN KEY (source_h_preset) REFERENCES src_preset (number) ON DELETE SET NULL;
 ALTER TABLE src_config ADD FOREIGN KEY (default_src_preset) REFERENCES src_preset (number) ON DELETE SET DEFAULT;
 
 UPDATE module_config SET source_a_preset = source_a-288 WHERE source_a>288;
@@ -979,7 +991,7 @@ ALTER TABLE module_config
 
 CREATE TABLE routing_preset (
   mod_number smallint NOT NULL CHECK (mod_number>=1 AND mod_number<=128),
-  mod_preset varchar(1) NOT NULL CHECK(mod_preset='A' OR mod_preset='B' OR mod_preset='C' OR mod_preset='D'),
+  mod_preset varchar(1) NOT NULL CHECK(mod_preset>='A' AND mod_preset<='H'),
   buss_1_2_use_preset boolean NOT NULL DEFAULT FALSE,
   buss_1_2_level float NOT NULL DEFAULT 0 CHECK(buss_1_2_level>=-140 AND buss_1_2_level<=10),
   buss_1_2_on_off boolean NOT NULL DEFAULT TRUE,
@@ -1067,6 +1079,10 @@ INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'A' FROM generate_
 INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'B' FROM generate_series(1, 128);
 INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'C' FROM generate_series(1, 128);
 INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'D' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'E' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'F' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'G' FROM generate_series(1, 128);
+INSERT INTO routing_preset (mod_number, mod_preset) SELECT *, 'H' FROM generate_series(1, 128);
 
 ALTER TABLE module_config
   ADD COLUMN use_insert_preset boolean NOT NULL DEFAULT FALSE,
@@ -1125,7 +1141,7 @@ CREATE TABLE console_preset (
   console2 boolean NOT NULL DEFAULT FALSE,
   console3 boolean NOT NULL DEFAULT FALSE,
   console4 boolean NOT NULL DEFAULT FALSE,
-  mod_preset varchar(1) DEFAULT 'A' CHECK(mod_preset='A' OR mod_preset='B' OR mod_preset='C' OR mod_preset='D'),
+  mod_preset varchar(1) DEFAULT 'A' CHECK(mod_preset>='A' AND mod_preset<='H'),
   buss_preset smallint CHECK(number>=1 AND number<=1280)
 );
 
@@ -1223,6 +1239,38 @@ BEGIN
     cnt_pos := cnt_pos + 1;
   END LOOP;
   RETURN cnt_pos;
+END
+\\\$\\\$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION src_config_changed() RETURNS trigger AS \\\$\\\$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    UPDATE module_config SET source_a = 0 WHERE source_a = OLD.number+288;
+    UPDATE module_config SET source_b = 0 WHERE source_b = OLD.number+288;
+    UPDATE module_config SET source_c = 0 WHERE source_c = OLD.number+288;
+    UPDATE module_config SET source_d = 0 WHERE source_d = OLD.number+288;
+    UPDATE module_config SET source_e = 0 WHERE source_e = OLD.number+288;
+    UPDATE module_config SET source_f = 0 WHERE source_f = OLD.number+288;
+    UPDATE module_config SET source_g = 0 WHERE source_g = OLD.number+288;
+    UPDATE module_config SET source_h = 0 WHERE source_h = OLD.number+288;
+    UPDATE module_config SET insert_source = 0 WHERE insert_source = OLD.number+288;
+    UPDATE dest_config SET source = 0 WHERE source = OLD.number+288;
+    UPDATE dest_config SET mix_minus_source = 0 WHERE mix_minus_source = OLD.number+288;
+    UPDATE extern_src_config SET ext1 = 0 WHERE ext1 = OLD.number+288;
+    UPDATE extern_src_config SET ext2 = 0 WHERE ext2 = OLD.number+288;
+    UPDATE extern_src_config SET ext3 = 0 WHERE ext3 = OLD.number+288;
+    UPDATE extern_src_config SET ext4 = 0 WHERE ext4 = OLD.number+288;
+    UPDATE extern_src_config SET ext5 = 0 WHERE ext5 = OLD.number+288;
+    UPDATE extern_src_config SET ext6 = 0 WHERE ext6 = OLD.number+288;
+    UPDATE extern_src_config SET ext7 = 0 WHERE ext7 = OLD.number+288;
+    UPDATE extern_src_config SET ext8 = 0 WHERE ext8 = OLD.number+288;
+    UPDATE monitor_buss_config SET default_selection = 0 WHERE default_selection = OLD.number+288;
+    UPDATE talkback_config SET source = 0 WHERE source = OLD.number+288;
+    INSERT INTO recent_changes (change, arguments) VALUES('src_config_changed', OLD.number::text);
+  ELSE
+    INSERT INTO recent_changes (change, arguments) VALUES('src_config_changed', NEW.number::text);
+  END IF;
+  RETURN NULL;
 END
 \\\$\\\$ LANGUAGE plpgsql;
 
