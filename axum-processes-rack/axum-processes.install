@@ -594,7 +594,8 @@ ALTER TABLE buss_config
   DROP COLUMN pre_level;
 
 ALTER TABLE buss_config
-  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
+  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4),
+  ADD COLUMN mono boolean NOT NULL DEFAULT FALSE;
 
 ALTER TABLE buss_config
   ADD CHECK(level>=-140 AND level<=10);
