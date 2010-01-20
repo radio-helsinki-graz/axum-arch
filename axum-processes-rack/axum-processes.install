@@ -245,7 +245,6 @@ CREATE TABLE src_preset (
   lc_frequency smallint NOT NULL DEFAULT 80 CHECK(lc_frequency>=40 AND lc_frequency<=12000),
   use_insert_preset boolean NOT NULL DEFAULT FALSE,
   insert_on_off boolean NOT NULL DEFAULT FALSE,
-  insert_source smallint NOT NULL DEFAULT 0,
   use_phase_preset boolean NOT NULL DEFAULT FALSE,
   phase_on_off boolean NOT NULL DEFAULT FALSE,
   phase smallint NOT NULL DEFAULT 3 CHECK(phase>=0 AND phase<=3),
