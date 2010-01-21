@@ -1291,6 +1291,9 @@ ALTER TABLE global_config
   DROP COLUMN routing_preset_8_label,
   DROP COLUMN use_module_defaults;
 
+ALTER TABLE dest_config
+  ADD COLUMN routing smallint NOT NULL DEFAULT 0 CHECK(routing>=0 AND routing<=3);
+
 COMMIT;
     \";
     my \$q = \$sql->prepare(\$query);
