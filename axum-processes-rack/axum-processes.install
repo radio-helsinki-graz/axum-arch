@@ -1295,6 +1295,18 @@ ALTER TABLE global_config
 ALTER TABLE dest_config
   ADD COLUMN routing smallint NOT NULL DEFAULT 0 CHECK(routing>=0 AND routing<=3);
 
+ALTER TABLE dest_config
+  ALTER COLUMN output1_addr DROP NOT NULL,
+  ALTER COLUMN output2_addr DROP NOT NULL;
+
+ALTER TABLE src_config
+  DROP CONSTRAINT src_config_input1_sub_ch_check1,
+  DROP CONSTRAINT src_config_input2_sub_ch_check1;
+
+ALTER TABLE src_config
+  ADD CONSTRAINT src_config_input1_sub_ch_check1 CHECK (input1_sub_ch >= 0 AND input1_sub_ch <= 32),
+  ADD CONSTRAINT src_config_input2_sub_ch_check1 CHECK (input2_sub_ch >= 0 AND input2_sub_ch <= 32);
+
 COMMIT;
     \";
     my \$q = \$sql->prepare(\$query);
