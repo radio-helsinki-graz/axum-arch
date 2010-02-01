@@ -211,6 +211,7 @@ ALTER TABLE module_config
   ADD COLUMN source_f_preset smallint,
   ADD COLUMN source_g_preset smallint,
   ADD COLUMN source_h_preset smallint,
+  ADD COLUMN overrule_active boolean NOT NULL DEFAULT FALSE,
   ADD COLUMN buss_1_2_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_3_4_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
   ADD COLUMN buss_5_6_use_preset boolean[8] NOT NULL DEFAULT ARRAY[TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE],
