@@ -38,9 +38,28 @@ pre_upgrade() {
 }
 
 post_upgrade() {
+  NEW=`echo $1`
+  OLD=`echo $2`
 
   #make sure delete rows are 'removed'
   vacuumdb -af -U postgres
+
+  if [[ "$OLD" =~ git-(.*) ]]
+  then
+    if [ ${BASH_REMATCH[1]} -lt 8 ]
+    then
+      if [[ "$NEW" =~ git-(.*) ]]
+      then
+        if [ ${BASH_REMATCH[1]} -ge 8 ]
+        then
+          #copy the configuration file
+          cp /etc/rc.conf /etc/rc.confsave
+          cp /root/rc.conf /etc/rc.conf
+          echo "WARNING: old /etc/rc.conf saved as /etc/rc.confsave"
+        fi
+      fi
+    fi
+  fi
 
   /etc/rc.d/axum-gateway start
   /etc/rc.d/axum-address start
@@ -319,7 +338,6 @@ INSERT INTO src_preset (  number,
                           lc_frequency,
                           use_insert_preset,
                           insert_on_off,
-                          insert_source,
                           use_phase_preset,
                           phase_on_off,
                           phase,
@@ -379,7 +397,6 @@ INSERT INTO src_preset (  number,
                                                   lc_frequency,
                                                   use_insert_preset,
                                                   insert_on_off,
-                                                  insert_source,
                                                   use_phase_preset,
                                                   phase_on_off,
                                                   phase,
@@ -1466,33 +1483,6 @@ INSERT INTO functions (func, name, rcv_type, xmt_type, pos) VALUES ('(6,,43)', '
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos) VALUES ('(6,,44)', 'Talkback 16 & Monitor talkback 16', 0, 3, 925);
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos) VALUES ('(6,,45)', 'Routing', 2, 4, 926);
 
-UPDATE module_config SET buss_1_2_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 1;
-UPDATE module_config SET buss_3_4_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 2;
-UPDATE module_config SET buss_5_6_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 3;
-UPDATE module_config SET buss_7_8_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 4;
-UPDATE module_config SET buss_9_10_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 5;
-UPDATE module_config SET buss_11_12_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 6;
-UPDATE module_config SET buss_13_14_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 7;
-UPDATE module_config SET buss_15_16_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 8;
-UPDATE module_config SET buss_17_18_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 9;
-UPDATE module_config SET buss_19_20_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 10;
-UPDATE module_config SET buss_21_22_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 11;
-UPDATE module_config SET buss_23_24_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 12;
-UPDATE module_config SET buss_25_26_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 13;
-UPDATE module_config SET buss_27_28_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 14;
-UPDATE module_config SET buss_29_30_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 15;
-UPDATE module_config SET buss_31_32_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 16;
-
-ALTER TABLE buss_config
-  DROP COLUMN pre_level;
-
-ALTER TABLE buss_config
-  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4),
-  ADD COLUMN mono boolean NOT NULL DEFAULT FALSE;
-
-ALTER TABLE buss_config
-  ADD CHECK(level>=-140 AND level<=10);
-
 ALTER TABLE monitor_buss_config
   ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4);
 
@@ -1870,6 +1860,33 @@ ALTER TABLE module_config
   RENAME COLUMN new_buss_31_32_pre_post TO buss_31_32_pre_post;
 ALTER TABLE module_config
   RENAME COLUMN new_buss_31_32_balance TO buss_31_32_balance;
+
+ALTER TABLE buss_config
+  ADD COLUMN console smallint NOT NULL DEFAULT 1 CHECK(console>=1 AND console<=4),
+  ADD COLUMN mono boolean NOT NULL DEFAULT FALSE;
+
+ALTER TABLE buss_config
+  ADD CHECK(level>=-140 AND level<=10);
+
+UPDATE module_config SET buss_1_2_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 1;
+UPDATE module_config SET buss_3_4_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 2;
+UPDATE module_config SET buss_5_6_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 3;
+UPDATE module_config SET buss_7_8_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 4;
+UPDATE module_config SET buss_9_10_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 5;
+UPDATE module_config SET buss_11_12_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 6;
+UPDATE module_config SET buss_13_14_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 7;
+UPDATE module_config SET buss_15_16_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 8;
+UPDATE module_config SET buss_17_18_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 9;
+UPDATE module_config SET buss_19_20_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 10;
+UPDATE module_config SET buss_21_22_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 11;
+UPDATE module_config SET buss_23_24_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 12;
+UPDATE module_config SET buss_25_26_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 13;
+UPDATE module_config SET buss_27_28_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 14;
+UPDATE module_config SET buss_29_30_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 15;
+UPDATE module_config SET buss_31_32_pre_post = b.pre_level FROM buss_config b WHERE module_config.console = b.console AND b.number = 16;
+
+ALTER TABLE buss_config
+  DROP COLUMN pre_level;
 
 CREATE TABLE routing_preset (
   mod_number smallint NOT NULL CHECK (mod_number>=1 AND mod_number<=128),

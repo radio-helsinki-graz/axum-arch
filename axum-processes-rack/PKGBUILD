@@ -1,6 +1,6 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=7
+pkgrel=8
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -9,7 +9,7 @@ backup=(etc/conf.d/axum-rack.conf etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezo
 license=('GPL')
 install=axum-processes.install
 
-source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-rack.conf ip.conf timezone.conf ntp.conf)
+source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-rack.conf ip.conf timezone.conf ntp.conf rc.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -46,6 +46,8 @@ build() {
   install -m 644 "$startdir/axum-rack.logrotate" "$pkgdir/etc/logrotate.d/axum-rack"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
   install -m 755 -d "$pkgdir/usr/bin"
+  install -m 750 -d "$pkgdir/root"
+  install -m 644 "$startdir/rc.conf" "$pkgdir/root/rc.conf"
 
   # build everything
   cd "$srcdir/g"
