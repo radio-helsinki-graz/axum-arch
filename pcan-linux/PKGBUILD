@@ -1,5 +1,5 @@
 pkgname=pcan-linux
-pkgver=6.9b
+pkgver=6.13
 pkgrel=4
 pkgdesc="Linux netdev drivers for the PEAK ISA card"
 url="http://www.peak-system.com/linux/"
