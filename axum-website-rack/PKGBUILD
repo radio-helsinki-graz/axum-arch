@@ -5,12 +5,11 @@ pkgdesc="Axum Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
 depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'perl-uri' 'xinetd' 'ntp' 'lighttpd' 'postgresql-libs')
-backup=()
 backup=(etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/lighttpd.conf /etc/lighttpd/.lighttpdpassword)
 license=('GPL')
 install=axum-website-rack.install
 
-source=(ip.conf timezone.conf ntp.conf rc.conf axum-backup.conf services.conf lighttpd.conf lighttpdpassword)
+source=(ip.conf timezone.conf ntp.conf ntpserver.conf rc.conf axum-backup.conf services.conf lighttpd.conf lighttpdpassword)
 gitroot="git@192.168.0.9:"
 
 build() {
