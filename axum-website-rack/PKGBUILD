@@ -1,15 +1,16 @@
 pkgname=axum-website-rack
 pkgver=git
-pkgrel=7
+pkgrel=8
 pkgdesc="Axum Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs' 'axum-processes-rack>=git-8')
+depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'perl-uri' 'xinetd' 'ntp' 'lighttpd' 'postgresql-libs')
 backup=()
+backup=(etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/lighttpd.conf /etc/lighttpd/.lighttpdpassword)
 license=('GPL')
-install=axum-website.install
+install=axum-website-rack.install
 
-source=()
+source=(ip.conf timezone.conf ntp.conf rc.conf axum-backup.conf services.conf lighttpd.conf lighttpdpassword)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -23,19 +24,29 @@ build() {
 
   # Arch scripts & config
   install -m 755 -d "$pkgdir/www"
+  install -m 755 -d "$pkgdir/etc/"
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
-  install -m 755 -d "$pkgdir/etc/lighttpd" 
+  install -m 755 -d "$pkgdir/etc/lighttpd"
+  install -m 755 -d "$pkgdir/etc/conf.d"
+  install -m 755 -d "$pkgdir/usr/bin"
   install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
   install -m 644 "$startdir/lighttpd.conf" "$pkgdir/etc/lighttpd/lighttpd_axum_website.conf"
+  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
+  install -m 666 "$startdir/ntpserver.conf" "$pkgdir/etc/conf.d/ntp"
+  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
+  install -m 755 "$startdir/axum-backup.sh" "$pkgdir/usr/bin/axum-backup.sh"
+  install -m 750 -d "$pkgdir/root"
+  install -m 644 "$startdir/rc.conf" "$pkgdir/root/rc_website.conf"
+  install -m 755 -d "$pkgdir/etc/xinetd.d"
+  install -m 644 "$startdir/axum-backup.conf" "$pkgdir/etc/xinetd.d/axum-backup"
+  install -m 644 "$startdir/services.conf" "$pkgdir/root/services.conf"
+  install -m 644 "$startdir/ntp.conf" "$pkgdir/root/ntp.conf"
+  install -m 644 "$startdir/lighttpd.conf" "$pkgdir/root/lighttpd.conf"
+  install -m 755 -d "$pkgdir/etc/lighttpd"
+  install -m 666 "$startdir/lighttpdpassword" "$pkgdir/etc/lighttpd/.lighttpdpassword"
 
   # install webfiles
   cp -r g/* "$pkgdir/www"
-  # dsp firmware files
-#  mkdir "$srcdir/dsp"
-#  cd "$srcdir/dsp"
-#  scp "${gitroot}additional-files/dsp/*" .
-#  install -m 755 -d "$pkgdir/var/lib/axum/dsp"
-#  install -m 644 -t "$pkgdir/var/lib/axum/dsp" *
 }
 

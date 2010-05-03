@@ -1,7 +1,0 @@
-pre_upgrade() {
-  /etc/rc.d/lighttpd stop
-}
-
-post_upgrade() {
-  /etc/rc.d/lighttpd start
-}
