@@ -1,0 +1,52 @@
+pre_upgrade() {
+
+  echo "Current date/time: $(date)"
+  echo "Be patient, the upgrade may take some minutes..."
+
+  /etc/rc.d/lighttpd stop
+  /etc/rc.d/xinetd stop
+  /etc/rc.d/ntpd stop
+  /etc/rc.d/crond stop
+}
+
+post_upgrade() {
+  NEW=`echo $1`
+  OLD=`echo $2`
+
+  if [[ "$OLD" =~ git-(.*) ]]
+  then
+    if [ ${BASH_REMATCH[1]} -lt 8 ]
+    then
+      if [[ "$NEW" =~ git-(.*) ]]
+      then
+        if [ ${BASH_REMATCH[1]} -ge 8 ]
+        then
+          #copy the configuration file
+          cp /etc/rc.conf /etc/rc.confsave
+          cp /root/rc_website.conf /etc/rc.conf
+          echo "WARNING: old /etc/rc.conf saved as /etc/rc.confsave"
+
+          #copy the configuration file
+          cp /etc/services /etc/services.confsave
+          cp /root/services.conf /etc/services
+          echo "WARNING: old /etc/services saved as /etc/services.confsave"
+          
+          cp /etc/ntp.conf /etc/ntp.confsave
+          cp /root/ntp.conf /etc/ntp.conf
+          echo "WARNING: old /etc/ntp.conf saved as /etc/ntp.confsave"
+
+          cp /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.confsave
+          cp /root/lighttpd.conf /etc/lighttpd/lighttpd.conf
+          echo "WARNING: old /etc/lighttpd/lighttpd.conf save as /etc/lighttpd/lighttpd.confsave"
+        fi
+      fi
+    fi
+  fi
+
+  /etc/rc.d/crond start
+  /etc/rc.d/ntpd start
+  /etc/rc.d/xinetd start
+  /etc/rc.d/lighttpd start
+
+  echo "Upgrade finished at date/time: $(date)"
+}
