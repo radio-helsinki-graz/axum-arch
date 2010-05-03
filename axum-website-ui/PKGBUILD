@@ -1,12 +1,14 @@
 pkgname=axum-website-ui
 pkgver=git
-pkgrel=3
+pkgrel=4
 pkgdesc="Axum Website"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs')
-backup=()
+depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'perl-uri' 'xinetd' 'lighttpd' 'postgresql-libs')
+backup=(/etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/.lighttpdpassword)
+
 license=('GPL')
+install=axum-website-ui.install
 
 source=()
 gitroot="git@192.168.0.9:"
@@ -27,6 +29,16 @@ build() {
   install -m 755 -d "$pkgdir/etc/lighttpd" 
   install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
   install -m 644 "$startdir/lighttpd.conf" "$pkgdir/etc/lighttpd/lighttpd_axum_website.conf"
+  install -m 755 -d "$pkgdir/etc/xinetd.d"
+  install -m 644 "$startdir/axum-backup.conf" "$pkgdir/etc/xinetd.d/axum-backup"
+  install -m 750 -d "$pkgdir/root"
+  install -m 644 "$startdir/services.conf" "$pkgdir/root/services.conf"
+  install -m 644 "$startdir/ntp.conf" "$pkgdir/root/ntp.conf"
+  install -m 644 "$startdir/lighttpd.conf" "$pkgdir/root/lighttpd.conf"
+  install -m 755 -d "$pkgdir/etc/lighttpd"
+  install -m 666 "$startdir/lighttpdpassword" "$pkgdir/etc/lighttpd/.lighttpdpassword"
+  install -m 755 -d "$pkgdir/usr/bin"
+  install -m 755 "$startdir/axum-backup.sh" "$pkgdir/usr/bin/axum-backup.sh"
 
   # install webfiles
   cp -r g/* "$pkgdir/www"
