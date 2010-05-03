@@ -33,6 +33,10 @@ post_upgrade() {
           cp /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.confsave
           cp /root/lighttpd.conf /etc/lighttpd/lighttpd.conf
           echo "WARNING: old /etc/lighttpd/lighttpd.conf save as /etc/lighttpd/lighttpd.confsave"
+
+          cp /etc/rc.conf /etc/rc.confsave
+          cp /root/rc_website.conf /etc/rc.conf
+          echo "WARNING: old /etc/rc.conf save as /etc/rc.confsave"
         fi
       fi
     fi
