@@ -1,14 +1,15 @@
 pkgname=oxygen5-website-ui
 pkgver=git
-pkgrel=2
+pkgrel=4
 pkgdesc="Oxygen 5 website for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'lighttpd' 'postgresql-libs')
-backup=()
+depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'perl-uri' 'xinetd' 'lighttpd' 'postgresql-libs')
+backup=(/etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/.lighttpdpassword /etc/conf.d/ip)
 license=('GPL')
+install=oxygen5-website-ui.install
 
-source=()
+source=(YAWF.logrotate ip.conf timezone.conf lighttpd.conf axum-backup.conf axum-backup.sh services.conf ntp.conf ntpserver.conf lighttpdpassword)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -22,11 +23,25 @@ build() {
 
   # Arch scripts & config
   install -m 755 -d "$pkgdir/www"
+  install -m 755 -d "$pkgdir/etc"
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 755 -d "$pkgdir/etc/lighttpd" 
   install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
   install -m 644 "$startdir/lighttpd.conf" "$pkgdir/etc/lighttpd/lighttpd_oxygen5_website.conf"
+  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
+  install -m 666 "$startdir/ntpserver.conf" "$pkgdir/etc/conf.d/ntp"
+  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
+  install -m 755 -d "$pkgdir/etc/xinetd.d"
+  install -m 644 "$startdir/axum-backup.conf" "$pkgdir/etc/xinetd.d/axum-backup"
+  install -m 750 -d "$pkgdir/root"
+  install -m 644 "$startdir/services.conf" "$pkgdir/root/services.conf"
+  install -m 644 "$startdir/ntp.conf" "$pkgdir/root/ntp.conf"
+  install -m 644 "$startdir/lighttpd.conf" "$pkgdir/root/lighttpd.conf"
+  install -m 755 -d "$pkgdir/etc/lighttpd"
+  install -m 666 "$startdir/lighttpdpassword" "$pkgdir/etc/lighttpd/.lighttpdpassword"
+  install -m 755 -d "$pkgdir/usr/bin"
+  install -m 755 "$startdir/axum-backup.sh" "$pkgdir/usr/bin/axum-backup.sh"
 
   # install webfiles
   cp -r g/* "$pkgdir/www"
