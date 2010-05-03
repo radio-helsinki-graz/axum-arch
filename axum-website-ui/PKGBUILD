@@ -5,12 +5,12 @@ pkgdesc="Axum Website"
 url="http://192.168.0.9/"
 arch=(i686)
 depends=('perl' 'fcgi' 'perl-fcgi' 'perl-dbi' 'perl-dbd-pg' 'perl-uri' 'xinetd' 'lighttpd' 'postgresql-libs')
-backup=(/etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/.lighttpdpassword)
+backup=(/etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttpd/.lighttpdpassword /etc/conf.d/ip)
 
 license=('GPL')
 install=axum-website-ui.install
 
-source=()
+source=(YAWF.logrotate ip.conf timezone.conf lighttpd.conf axum-backup.conf axum-backup.sh services.conf ntp.conf ntpserver.conf lighttpdpassword)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -29,6 +29,9 @@ build() {
   install -m 755 -d "$pkgdir/etc/lighttpd" 
   install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
   install -m 644 "$startdir/lighttpd.conf" "$pkgdir/etc/lighttpd/lighttpd_axum_website.conf"
+  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
+  install -m 666 "$startdir/ntpserver.conf" "$pkgdir/etc/conf.d/ntp"
+  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
   install -m 755 -d "$pkgdir/etc/xinetd.d"
   install -m 644 "$startdir/axum-backup.conf" "$pkgdir/etc/xinetd.d/axum-backup"
   install -m 750 -d "$pkgdir/root"
