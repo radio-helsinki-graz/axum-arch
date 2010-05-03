@@ -9,7 +9,7 @@ backup=(etc/conf.d/axum-rack.conf var/lib/axum/uniqueids-rack)
 license=('GPL')
 install=axum-processes.install
 
-source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-rack.conf)
+source=(axum-cleandb axum-gateway axum-address axum-learner axum-engine axum-rack.conf rc.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
