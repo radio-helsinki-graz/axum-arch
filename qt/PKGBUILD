@@ -8,7 +8,8 @@ depends=('libpng' 'zlib' 'libjpeg' 'postgresql-libs')
 provides=("qt=${pkgver}" "qt4=${pkgver}")
 conflicts=('qt4' 'qt')
 
-source=("ftp://ftp.qtsoftware.com/qt/source/qt-embedded-linux-opensource-src-$pkgver.tar.gz")
+#source=("ftp://ftp.qtsoftware.com/qt/source/qt-embedded-linux-opensource-src-$pkgver.tar.gz")
+source=("ftp://ftp.qt.nokia.com/qt/source/qt-embedded-linux-opensource-src-$pkgver.tar.gz")
 
 build() {
   cd "$srcdir/qt-embedded-linux-opensource-src-$pkgver"
