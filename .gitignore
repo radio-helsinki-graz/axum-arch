@@ -1,4 +1,5 @@
 *.pkg.tar.gz
+qt/*.tar.gz
 linux-2.6.28.tar.bz2
 */pkg
 */src
