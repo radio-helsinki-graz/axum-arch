@@ -1,6 +1,6 @@
 pkgname=axum-website-rack
 pkgver=git
-pkgrel=8
+pkgrel=9
 pkgdesc="Axum Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
