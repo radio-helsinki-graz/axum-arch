@@ -1,10 +1,10 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=9
+pkgrel=10
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn' 'postgresql-libs' 'axum-website-rack>=git-8' )
+depends=('libmbn=git-7' 'postgresql-libs' 'axum-website-rack=git-9' )
 backup=(etc/conf.d/axum-rack.conf var/lib/axum/uniqueids-rack)
 license=('GPL')
 install=axum-processes.install
@@ -43,8 +43,20 @@ build() {
   install -m 644 "$startdir/axum-rack.logrotate" "$pkgdir/etc/logrotate.d/axum-rack"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
   install -m 750 -d "$pkgdir/root"
-  install -m 644 "$startdir/rc.conf" "$pkgdir/root/rc_processes.conf"
+  install -m 644 "$startdir/rc_processes.conf" "$pkgdir/root/rc_processes.conf"
+  install -m 644 "$startdir/ntp_processes.conf" "$pkgdir/root/ntp_processes.conf"
   install -m 755 -d "$pkgdir/usr/bin"
+
+  # SQL files
+  install -m 755 "$startdir/axum_db_v0_to_v1.sql" "$pkgdir/root/axum_db_v0_to_v1.sql"
+  install -m 755 "$startdir/axum_db_v2_to_v3.sql" "$pkgdir/root/axum_db_v2_to_v3.sql"
+  install -m 755 "$startdir/axum_db_v3_to_v4.sql" "$pkgdir/root/axum_db_v3_to_v4.sql"
+  install -m 755 "$startdir/axum_db_v4_to_v5.sql" "$pkgdir/root/axum_db_v4_to_v5.sql"
+  install -m 755 "$startdir/axum_db_v5_to_v6.sql" "$pkgdir/root/axum_db_v5_to_v6.sql"
+  install -m 755 "$startdir/axum_db_v6_to_v7.sql" "$pkgdir/root/axum_db_v6_to_v7.sql"
+  install -m 755 "$startdir/axum_db_v7_to_v8.sql" "$pkgdir/root/axum_db_v7_to_v8.sql"
+  install -m 755 "$startdir/axum_db_v8_to_v9.sql" "$pkgdir/root/axum_db_v8_to_v9.sql"
+  install -m 755 "$startdir/axum_db_v9_to_v10.sql" "$pkgdir/root/axum_db_v9_to_v10.sql"
 
   # build everything
   cd "$srcdir/g"
