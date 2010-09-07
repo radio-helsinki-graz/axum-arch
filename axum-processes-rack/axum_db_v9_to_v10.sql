@@ -1125,4 +1125,6 @@ INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label) VALUES ('(6,,
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label) VALUES ('(6,,48)', 'Select 3', 3, 3, 1112, 'Select 3');
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label) VALUES ('(6,,49)', 'Select 4', 3, 3, 1113, 'Select 4');
 
+ALTER TABLE monitor_buss_preset_rows ADD FOREIGN KEY (number) REFERENCES buss_preset (number) ON DELETE CASCADE ON UPDATE CASCADE;
+
 COMMIT;
