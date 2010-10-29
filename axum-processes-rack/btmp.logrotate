@@ -1,0 +1,6 @@
+/var/log/btmp {
+    monthly
+    minsize 1M
+    create 0600 root root
+    rotate 1
+}

@@ -42,6 +42,7 @@ build() {
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum-rack.logrotate" "$pkgdir/etc/logrotate.d/axum-rack"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
+  install -m 644 "$startdir/btmp.logrotate" "$pkgdir/etc/logrotate.d/btmp"
   install -m 750 -d "$pkgdir/root"
   install -m 644 "$startdir/rc_processes.conf" "$pkgdir/root/rc_processes.conf"
   install -m 644 "$startdir/ntp_processes.conf" "$pkgdir/root/ntp_processes.conf"
