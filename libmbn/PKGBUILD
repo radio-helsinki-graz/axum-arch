@@ -1,6 +1,6 @@
 pkgname=libmbn
 pkgver=git
-pkgrel=8
+pkgrel=9
 pkgdesc="MambaNet Library"
 url="http://192.168.0.9/mbn-lib.git/"
 arch=(i686)
