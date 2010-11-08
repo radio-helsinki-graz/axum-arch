@@ -1,15 +1,15 @@
 pkgname=axum-processes-ui
 pkgver=git
-pkgrel=5
+pkgrel=6
 pkgdesc="Axum Linux Processes for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn>=git-8' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-4' 'ntp' 'axum-website-ui=git-4')
-backup=(etc/conf.d/axum-ui.conf etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone var/lib/axum/uniqueids-ui)
+depends=('libmbn>=git-9' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-4' 'ntp' 'axum-website-ui>=git-4')
+backup=(etc/conf.d/axum-ui.conf var/lib/axum/uniqueids-ui)
 license=('GPL')
 install=axum-processes.install
 
-source=(axum-gateway axum-meters axum-ui.conf ip.conf timezone.conf ntp.conf)
+source=(axum-gateway axum-meters axum-ui.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -36,9 +36,6 @@ build() {
   #TODO: after package install you have to add the daemons in the /etc/rc.conf
   install -m 755 -d "$pkgdir/etc/conf.d"
   install -m 644 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
-  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
-  install -m 666 "$startdir/ntp.conf" "$pkgdir/etc/conf.d/ntp"
-  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum-ui.logrotate" "$pkgdir/etc/logrotate.d/axum-ui"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
