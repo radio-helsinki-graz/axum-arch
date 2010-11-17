@@ -1,6 +1,6 @@
 /var/log/axum-address.log {
   size 5M
-  rotate 0
+  rotate 1
   missingok
   postrotate
     killall -HUP axum-address
@@ -9,7 +9,7 @@
 
 /var/log/axum-learner.log {
   size 5M
-  rotate 0
+  rotate 1
   missingok
   postrotate
     killall -HUP axum-learner
@@ -18,10 +18,18 @@
 
 /var/log/axum-engine.log {
   size 5M
-  rotate 0
+  rotate 4
   missingok
   postrotate
     killall -HUP axum-engine
   endscript
 }
-# (gateway doesn't log)
+
+/var/log/axum-gateway.log {
+  size 5M
+  rotate 1
+  missingok
+  postrotate
+    killall -HUP axum-gateway
+  endscript
+}
