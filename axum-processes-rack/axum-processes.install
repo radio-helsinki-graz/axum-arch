@@ -353,6 +353,29 @@ for (\$i = \$old_version; \$i <= \$new_version; \$i++ ) {
     my \$j = \$i+1;
     printf(\"Database upgrade version \$i to version \$j done!\n\");
   }
+  if (\$i == 12) {
+    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
+                              PrintError => 0, RaiseError => 1,
+                              AutoCommit => 0, pg_enable_utf8 => 1,});
+
+    open IN, '/root/axum_db_v12_to_v13.sql';
+
+    my \$query;
+
+    while (<IN>)
+    {
+      \$query .= "\$_";
+    }
+
+    my \$q = \$sql->prepare(\$query);
+    \$q->execute();
+    \$sql->commit();
+
+    \$sql->disconnect();
+
+    my \$j = \$i+1;
+    printf(\"Database upgrade version \$i to version \$j done!\n\");
+  }
 }" > upgrade.pl
 
 chmod +x upgrade.pl
