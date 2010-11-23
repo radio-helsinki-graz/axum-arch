@@ -46,6 +46,7 @@ build() {
 
   # build everything
   cd "$srcdir/g"
+  make clean || return 1
   make || return 1
 
   # install binaries

@@ -18,6 +18,7 @@ build() {
 
   cd mbn
   make config
+  make clean || return 1
   make || return 1
 
   install -m 755 -d "$pkgdir/usr/lib"
