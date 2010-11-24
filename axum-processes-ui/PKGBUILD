@@ -61,5 +61,6 @@ build() {
   cd "$srcdir/g/meters/skins/dnr"
   install -m 755 -d "$pkgdir/var/lib/axum/skins/meters"
   install -m 644 -t "$pkgdir/var/lib/axum/skins/meters" *
+  install -m 666 -t "$pkgdir/var/lib/axum/skins/meters" logo.png
 }
 
