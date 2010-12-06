@@ -1,10 +1,10 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=13
+pkgrel=14
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn>=git-8' 'postgresql-libs' 'axum-website-rack=git-9' )
+depends=('libmbn>=git-9' 'postgresql-libs' 'axum-website-rack>=git-10' )
 backup=(etc/conf.d/axum-rack.conf var/lib/axum/uniqueids-rack)
 license=('GPL')
 install=axum-processes.install
@@ -61,6 +61,7 @@ build() {
   install -m 755 "$startdir/axum_db_v10_to_v11.sql" "$pkgdir/root/axum_db_v10_to_v11.sql"
   install -m 755 "$startdir/axum_db_v11_to_v12.sql" "$pkgdir/root/axum_db_v11_to_v12.sql"
   install -m 755 "$startdir/axum_db_v12_to_v13.sql" "$pkgdir/root/axum_db_v12_to_v13.sql"
+  install -m 755 "$startdir/axum_db_v13_to_v14.sql" "$pkgdir/root/axum_db_v13_to_v14.sql"
 
   # build everything
   cd "$srcdir/g"

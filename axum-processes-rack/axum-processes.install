@@ -124,259 +124,32 @@ my \$old_version = \$1;
 printf(\"upgrade database from version: \$old_version to version: \$new_version\n\"); $| = 1;
 
 my \$i;
-for (\$i = \$old_version; \$i <= \$new_version; \$i++ ) {
-  if (\$i == 2) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
 
-    open IN, '/root/axum_db_v2_to_v3.sql';
+my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
+                          PrintError => 0, RaiseError => 1,
+                          AutoCommit => 0, pg_enable_utf8 => 1,});
 
-    my \$query;
+for (\$i = \$old_version; \$i < \$new_version; \$i++ ) {
+  my \$j = \$i+1;
 
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
+  open IN, \"/root/axum_db_v\${i}_to_v\${j}.sql\";
 
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-    \$sql->disconnect();
+  my \$query;
 
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
+  while (<IN>)
+  {
+    \$query .= "\$_";
   }
-  if (\$i == 3) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
 
-    open IN, '/root/axum_db_v3_to_v4.sql';
+  my \$q = \$sql->prepare(\$query);
+  \$q->execute();
+  \$sql->commit();
 
-    my \$query;
+  printf(\"Database upgrade version \$i to version \$j done!\n\");
+}
 
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 4) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v4_to_v5.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 5) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v5_to_v6.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 6) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v6_to_v7.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 7) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v7_to_v8.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 8) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v8_to_v9.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 9) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v9_to_v10.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 10) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v10_to_v11.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 11) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v11_to_v12.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-  if (\$i == 12) {
-    my \$sql = DBI->connect('dbi:Pg:host=localhost;dbname=axum', 'axum', '', {
-                              PrintError => 0, RaiseError => 1,
-                              AutoCommit => 0, pg_enable_utf8 => 1,});
-
-    open IN, '/root/axum_db_v12_to_v13.sql';
-
-    my \$query;
-
-    while (<IN>)
-    {
-      \$query .= "\$_";
-    }
-
-    my \$q = \$sql->prepare(\$query);
-    \$q->execute();
-    \$sql->commit();
-
-    \$sql->disconnect();
-
-    my \$j = \$i+1;
-    printf(\"Database upgrade version \$i to version \$j done!\n\");
-  }
-}" > upgrade.pl
+\$sql->disconnect();
+" > upgrade.pl
 
 chmod +x upgrade.pl
 
