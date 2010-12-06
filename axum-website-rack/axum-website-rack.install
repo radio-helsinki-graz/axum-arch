@@ -7,6 +7,9 @@ pre_upgrade() {
   /etc/rc.d/xinetd stop
   /etc/rc.d/ntpd stop
   /etc/rc.d/crond stop
+
+  #set owner of /etc/hosts.allow to 'http' so we may change it from the website
+  chown http:root /etc/hosts.allow
 }
 
 post_upgrade() {
