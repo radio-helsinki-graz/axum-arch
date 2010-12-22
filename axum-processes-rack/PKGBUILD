@@ -1,10 +1,10 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=14
+pkgrel=15
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn>=git-9' 'postgresql-libs' 'axum-website-rack>=git-10' )
+depends=('libmbn>=git-11' 'postgresql-libs' 'axum-website-rack>=git-11' )
 backup=(etc/conf.d/axum-rack.conf var/lib/axum/uniqueids-rack)
 license=('GPL')
 install=axum-processes.install
@@ -38,7 +38,7 @@ build() {
   install -m 755 "$startdir/axum-engine" "$pkgdir/etc/rc.d/axum-engine"
   #TODO: after package install you have to add the daemons in the /etc/rc.conf
   install -m 755 -d "$pkgdir/etc/conf.d"
-  install -m 644 "$startdir/axum-rack.conf" "$pkgdir/etc/conf.d/axum-rack.conf"
+  install -m 666 "$startdir/axum-rack.conf" "$pkgdir/etc/conf.d/axum-rack.conf"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum-rack.logrotate" "$pkgdir/etc/logrotate.d/axum-rack"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
@@ -62,6 +62,7 @@ build() {
   install -m 755 "$startdir/axum_db_v11_to_v12.sql" "$pkgdir/root/axum_db_v11_to_v12.sql"
   install -m 755 "$startdir/axum_db_v12_to_v13.sql" "$pkgdir/root/axum_db_v12_to_v13.sql"
   install -m 755 "$startdir/axum_db_v13_to_v14.sql" "$pkgdir/root/axum_db_v13_to_v14.sql"
+  install -m 755 "$startdir/axum_db_v14_to_v15.sql" "$pkgdir/root/axum_db_v14_to_v15.sql"
 
   # build everything
   cd "$srcdir/g"
