@@ -1,10 +1,10 @@
 pkgname=axum-processes-ui
 pkgver=git
-pkgrel=7
+pkgrel=8
 pkgdesc="Axum Linux Processes for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn>=git-9' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-4' 'ntp' 'axum-website-ui>=git-4')
+depends=('libmbn>=git-11' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-5' 'ntp' 'axum-website-ui>=git-7')
 backup=(etc/conf.d/axum-ui.conf var/lib/axum/uniqueids-ui)
 license=('GPL')
 install=axum-processes.install
@@ -35,7 +35,7 @@ build() {
   install -m 755 "$startdir/axum-meters" "$pkgdir/etc/rc.d/axum-meters"
   #TODO: after package install you have to add the daemons in the /etc/rc.conf
   install -m 755 -d "$pkgdir/etc/conf.d"
-  install -m 644 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
+  install -m 666 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum-ui.logrotate" "$pkgdir/etc/logrotate.d/axum-ui"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
@@ -55,6 +55,7 @@ build() {
 
   cd "$srcdir/g/meters"
   qmake
+  make clean
   make
   make INSTALL_ROOT="$pkgdir" install
 
