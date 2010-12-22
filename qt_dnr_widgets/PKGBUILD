@@ -1,6 +1,6 @@
 pkgname=qt-dnr-widgets
 pkgver=git
-pkgrel=4
+pkgrel=5
 pkgdesc="D&R Widgets for QT"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -23,6 +23,7 @@ build() {
   # build everything
   cd "$srcdir/g/qt_widgets"
   qmake
+  make clean
   make
   make INSTALL_ROOT="$pkgdir" install
 }
