@@ -91,6 +91,19 @@ post_upgrade() {
         fi
       fi
     fi
+    if [ ${BASH_REMATCH[1]} -lt 16 ]
+    then
+      if [[ "$NEW" =~ git-(.*) ]]
+      then
+        if [ ${BASH_REMATCH[1]} -eq 16 ]
+        then
+          #copy the configuration file
+          cp /etc/rc.conf /etc/rc.confsave
+          cp /root/rc_processes.conf /etc/rc.conf
+          echo "WARNING: old /etc/rc.conf saved as /etc/rc.confsave"
+        fi
+      fi
+    fi
   fi
 
   /etc/rc.d/axum-gateway start
