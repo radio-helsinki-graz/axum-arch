@@ -1,10 +1,10 @@
 pkgname=axum-processes-ui
 pkgver=git
-pkgrel=8
+pkgrel=9
 pkgdesc="Axum Linux Processes for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn>=git-11' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-5' 'ntp' 'axum-website-ui>=git-7')
+depends=('libmbn>=git-12' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets=git-5' 'ntp' 'axum-website-ui>=git-7')
 backup=(etc/conf.d/axum-ui.conf var/lib/axum/uniqueids-ui)
 license=('GPL')
 install=axum-processes.install
