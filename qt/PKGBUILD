@@ -1,6 +1,6 @@
 pkgname=qt-dnr
 pkgver=4.5.2
-pkgrel=1
+pkgrel=2
 pkgdesc='Qt library optimized for the AXUM'
 arch=('i686')
 license=('GPL3' 'LGPL')
@@ -26,7 +26,7 @@ build() {
     -webkit \
     -scripttools \
     -system-zlib \
-    -no-gif \
+    -qt-gif \
     -no-libtiff \
     -system-libpng \
     -no-libmng \
@@ -45,6 +45,7 @@ build() {
     -depths 16 \
     -no-opengl \
     -qt-gfx-linuxfb \
+    -qt-gfx-vnc \
     -no-separate-debug-info \
     -optimized-qmake \
     -reduce-relocations \
@@ -55,7 +56,8 @@ build() {
     -datadir /usr/share/qt \
     -docdir /usr/share/doc/qt \
     -examplesdir /usr/share/doc/qt/examples \
-    -demosdir /usr/share/doc/qt/demos
+    -demosdir /usr/share/doc/qt/demos \
+    -D QT_NO_INOTIFY
 
   make
   make INSTALL_ROOT="$pkgdir" install
