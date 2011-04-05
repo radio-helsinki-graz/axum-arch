@@ -7,6 +7,27 @@ pre_upgrade() {
   /etc/rc.d/xinetd stop
   /etc/rc.d/ntpd stop
   /etc/rc.d/crond stop
+
+  NEW=`echo $1`
+  OLD=`echo $2`
+
+  if [[ "$OLD" =~ git-(.*) ]]
+  then
+    if [ ${BASH_REMATCH[1]} -lt 11 ]
+    then
+      if [[ "$NEW" =~ git-(.*) ]]
+      then
+        if [ ${BASH_REMATCH[1]} -ge 11 ]
+        then
+          cp /etc/lighttpd/.lighttpdpassword  /etc/lighttpd/lighttpdpassword.confsave
+          echo "WARNING: old .lighttpdpassword saved as lighttpdpassword.confsave"
+        fi
+      fi
+    fi
+  fi
+
+  #set owner of /etc/hosts.allow to 'http' so we may change it from the website
+  chown http:root /etc/hosts.allow
 }
 
 post_upgrade() {
@@ -34,10 +55,22 @@ post_upgrade() {
           cp /etc/ntp.conf /etc/ntp.confsave
           cp /root/ntp.conf /etc/ntp.conf
           echo "WARNING: old /etc/ntp.conf saved as /etc/ntp.confsave"
-
+        fi
+      fi
+    fi
+    if [ ${BASH_REMATCH[1]} -lt 11 ]
+    then
+      if [[ "$NEW" =~ git-(.*) ]]
+      then
+        if [ ${BASH_REMATCH[1]} -ge 11 ]
+        then
           cp /etc/lighttpd/lighttpd.conf /etc/lighttpd/lighttpd.confsave
           cp /root/lighttpd.conf /etc/lighttpd/lighttpd.conf
           echo "WARNING: old /etc/lighttpd/lighttpd.conf save as /etc/lighttpd/lighttpd.confsave"
+
+          cp /etc/lighttpd/lighttpdpassword.confsave  /etc/lighttpd/.lighttpdpassword_config
+          cp /etc/lighttpd/lighttpdpassword.confsave  /etc/lighttpd/.lighttpdpassword_system
+          echo "WARNING: restored .lighttpdpassword_config/_system from lighttpdpassword.confsave"
         fi
       fi
     fi

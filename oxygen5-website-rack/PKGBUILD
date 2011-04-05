@@ -1,6 +1,6 @@
 pkgname=oxygen5-website-rack
 pkgver=git
-pkgrel=8
+pkgrel=13
 pkgdesc="Oxygen 5 Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -23,10 +23,10 @@ build() {
 
   # Arch scripts & config
   install -m 755 -d "$pkgdir/www"
-  install -m 755 -d "$pkgdir/etc"
+  install -m 755 -d "$pkgdir/etc/"
   install -m 755 -d "$pkgdir/etc/rc.d"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
-  install -m 755 -d "$pkgdir/etc/lighttpd" 
+  install -m 755 -d "$pkgdir/etc/lighttpd"
   install -m 755 -d "$pkgdir/etc/conf.d"
   install -m 755 -d "$pkgdir/usr/bin"
   install -m 644 "$startdir/YAWF.logrotate" "$pkgdir/etc/logrotate.d/YAWF"
@@ -43,8 +43,9 @@ build() {
   install -m 644 "$startdir/ntp.conf" "$pkgdir/root/ntp.conf"
   install -m 644 "$startdir/lighttpd.conf" "$pkgdir/root/lighttpd.conf"
   install -m 755 -d "$pkgdir/etc/lighttpd"
-  install -m 666 "$startdir/lighttpdpassword" "$pkgdir/etc/lighttpd/.lighttpdpassword"
-                        
+  install -m 666 "$startdir/lighttpdpassword_config" "$pkgdir/etc/lighttpd/.lighttpdpassword_config"
+  install -m 666 "$startdir/lighttpdpassword_system" "$pkgdir/etc/lighttpd/.lighttpdpassword_system"
+
   # install webfiles
   cp -r g/* "$pkgdir/www"
 }
