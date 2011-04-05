@@ -1,10 +1,10 @@
 pkgname=qt-dnr-widgets
 pkgver=git
-pkgrel=5
+pkgrel=6
 pkgdesc="D&R Widgets for QT"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('qt-dnr')
+depends=('qt-dnr>=4.5.2-2')
 backup=(etc/conf.d/axum.conf etc/conf.d/ip)
 license=('GPL')
 
