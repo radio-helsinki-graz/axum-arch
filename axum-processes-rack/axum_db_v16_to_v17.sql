@@ -1870,6 +1870,8 @@ INSERT INTO predefined_node_config (man_id, prod_id, firm_major, cfg_name, objec
 
 -- Functions git-17
 
+TRUNCATE functions;
+
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label, user_level0, user_level1, user_level2, user_level3, user_level4, user_level5) VALUES ('(0,,0)', 'Label', 0, 4, 1, 'Label', true, true, true, true, true, true);
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label, user_level0, user_level1, user_level2, user_level3, user_level4, user_level5) VALUES ('(0,,1)', 'Source', 2, 4, 2, 'SRC', true, true, true, true, true, true);
 INSERT INTO functions (func, name, rcv_type, xmt_type, pos, label, user_level0, user_level1, user_level2, user_level3, user_level4, user_level5) VALUES ('(0,,259)', 'Module preset A', 3, 3, 3, 'A', true, true, true, true, true, true);
