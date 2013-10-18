@@ -1,6 +1,6 @@
 pkgname=axum-processes-rack
 pkgver=git
-pkgrel=17
+pkgrel=18
 pkgdesc="Axum Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -67,6 +67,7 @@ build() {
   install -m 755 "$startdir/axum_db_v14_to_v15.sql" "$pkgdir/root/axum_db_v14_to_v15.sql"
   install -m 755 "$startdir/axum_db_v15_to_v16.sql" "$pkgdir/root/axum_db_v15_to_v16.sql"
   install -m 755 "$startdir/axum_db_v16_to_v17.sql" "$pkgdir/root/axum_db_v16_to_v17.sql"
+  install -m 755 "$startdir/axum_db_v17_to_v18.sql" "$pkgdir/root/axum_db_v17_to_v18.sql"
 
   # build everything
   cd "$srcdir/g"

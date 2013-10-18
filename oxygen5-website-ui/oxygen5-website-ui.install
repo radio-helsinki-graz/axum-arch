@@ -7,6 +7,9 @@ pre_upgrade() {
   /etc/rc.d/xinetd stop
   /etc/rc.d/ntpd stop
   /etc/rc.d/crond stop
+
+  #setuid on /bin/date so the http-user may set the time
+  chmod 6755 /bin/date
 }
 
 post_upgrade() {

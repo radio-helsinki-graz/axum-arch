@@ -1,6 +1,6 @@
 pkgname=oxygen5-website-rack
 pkgver=git
-pkgrel=13
+pkgrel=14
 pkgdesc="Oxygen 5 Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -45,6 +45,12 @@ build() {
   install -m 755 -d "$pkgdir/etc/lighttpd"
   install -m 666 "$startdir/lighttpdpassword_config" "$pkgdir/etc/lighttpd/.lighttpdpassword_config"
   install -m 666 "$startdir/lighttpdpassword_system" "$pkgdir/etc/lighttpd/.lighttpdpassword_system"
+
+  # Select Axel icon
+  cp g/www/favicon.icoaxel g/www/favicon.ico
+  rm g/www/favicon.icoaxel
+  rm g/www/favicon.icodnr
+
 
   # install webfiles
   cp -r g/* "$pkgdir/www"

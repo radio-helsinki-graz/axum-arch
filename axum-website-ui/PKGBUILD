@@ -1,6 +1,6 @@
 pkgname=axum-website-ui
 pkgver=git
-pkgrel=8
+pkgrel=9
 pkgdesc="Axum Website"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -45,6 +45,11 @@ build() {
   install -m 755 -d "$pkgdir/usr/bin"
   install -m 755 "$startdir/axum-backup.sh" "$pkgdir/usr/bin/axum-backup.sh"
 
+  # Select DnR icon
+  cp g/www/favicon.icodnr g/www/favicon.ico
+  rm g/www/favicon.icodnr
+  rm g/www/favicon.icoaxel
+  
   # install webfiles
   cp -r g/* "$pkgdir/www"
   # dsp firmware files

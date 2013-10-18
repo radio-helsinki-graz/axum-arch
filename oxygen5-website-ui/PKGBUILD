@@ -1,6 +1,6 @@
 pkgname=oxygen5-website-ui
 pkgver=git
-pkgrel=4
+pkgrel=9
 pkgdesc="Oxygen 5 website for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -9,7 +9,7 @@ backup=(/etc/conf.d/timezone etc/xinetd.d/axum-backup /etc/services /etc/lighttp
 license=('GPL')
 install=oxygen5-website-ui.install
 
-source=(YAWF.logrotate ip.conf timezone.conf lighttpd.conf axum-backup.conf axum-backup.sh services.conf ntp.conf ntpserver.conf lighttpdpassword rc.conf)
+source=(YAWF.logrotate ip.conf timezone.conf lighttpd.conf axum-backup.conf axum-backup.sh services.conf ntp.conf ntpserver.conf lighttpdpassword)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -44,8 +44,12 @@ build() {
   install -m 666 "$startdir/lighttpdpassword" "$pkgdir/etc/lighttpd/.lighttpdpassword"
   install -m 755 -d "$pkgdir/usr/bin"
   install -m 755 "$startdir/axum-backup.sh" "$pkgdir/usr/bin/axum-backup.sh"
-  install -m
 
+  # select axel icon
+  cp g/www/favicon.icoaxel g/www/favicon.ico
+  rm g/www/favicon.icoaxel
+  rm g/www/favicon.icodnr
+  
   # install webfiles
   cp -r g/* "$pkgdir/www"
 }

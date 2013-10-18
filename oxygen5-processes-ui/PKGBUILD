@@ -1,14 +1,15 @@
 pkgname=oxygen5-processes-ui
 pkgver=git
-pkgrel=5
+pkgrel=13
 pkgdesc="Oxygen 5 Linux Processes for the user interface"
 url="http://192.168.0.9/"
 arch=(i686)
-depends=('libmbn' 'postgresql-libs' 'qt-dnr' 'qt-dnr-widgets' 'ntp')
-backup=(etc/conf.d/axum-ui.conf etc/conf.d/ip etc/conf.d/ntp etc/conf.d/timezone var/lib/axum/uniqueids-ui)
+depends=('libmbn>=git-13' 'postgresql-libs' 'qt-dnr-widgets>=git-6' 'ntp' 'oxygen5-website-ui>=git-8')
+backup=(etc/conf.d/axum-ui.conf var/lib/axum/uniqueids-ui)
 license=('GPL')
+install=oxygen5-processes.install
 
-source=(axum-gateway axum-meters axum-ui.conf ip.conf timezone.conf ntp.conf)
+source=(axum-gateway axum-meters axum-ui.conf)
 gitroot="git@192.168.0.9:"
 
 build() {
@@ -34,13 +35,13 @@ build() {
   install -m 755 "$startdir/axum-meters" "$pkgdir/etc/rc.d/axum-meters"
   #TODO: after package install you have to add the daemons in the /etc/rc.conf
   install -m 755 -d "$pkgdir/etc/conf.d"
-  install -m 644 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
-  install -m 666 "$startdir/ip.conf" "$pkgdir/etc/conf.d/ip"
-  install -m 666 "$startdir/ntp.conf" "$pkgdir/etc/conf.d/ntp"
-  install -m 666 "$startdir/timezone.conf" "$pkgdir/etc/conf.d/timezone"
+  install -m 666 "$startdir/axum-ui.conf" "$pkgdir/etc/conf.d/axum-ui.conf"
   install -m 755 -d "$pkgdir/etc/logrotate.d"
   install -m 644 "$startdir/axum-ui.logrotate" "$pkgdir/etc/logrotate.d/axum-ui"
   install -m 644 "$startdir/ntp.logrotate" "$pkgdir/etc/logrotate.d/ntp"
+  install -m 750 -d "$pkgdir/root"
+  install -m 644 "$startdir/rc_processes.conf" "$pkgdir/root/rc_processes.conf"
+  install -m 644 "$startdir/ntp_processes.conf" "$pkgdir/root/ntp_processes.conf"
   install -m 755 -d "$pkgdir/usr/bin"
 
   # build everything
@@ -61,5 +62,7 @@ build() {
   cd "$srcdir/g/meters/skins/axel"
   install -m 755 -d "$pkgdir/var/lib/axum/skins/meters"
   install -m 644 -t "$pkgdir/var/lib/axum/skins/meters" *
+  install -m 666 -t "$pkgdir/var/lib/axum/skins/meters" logo.png
+  install -m 666 -t "$pkgdir/var/lib/axum/skins/meters" redlight*
 }
 

@@ -1,6 +1,6 @@
 pkgname=axum-website-rack
 pkgver=git
-pkgrel=13
+pkgrel=16
 pkgdesc="Axum Website for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -46,6 +46,11 @@ build() {
   install -m 666 "$startdir/lighttpdpassword_config" "$pkgdir/etc/lighttpd/.lighttpdpassword_config"
   install -m 666 "$startdir/lighttpdpassword_system" "$pkgdir/etc/lighttpd/.lighttpdpassword_system"
 
+  # Select DnR icon
+  cp g/www/favicon.icodnr g/www/favicon.ico
+  rm g/www/favicon.icodnr
+  rm g/www/favicon.icoaxel
+   
   # install webfiles
   cp -r g/* "$pkgdir/www"
 }
