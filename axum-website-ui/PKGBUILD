@@ -1,6 +1,6 @@
 pkgname=axum-website-ui
 pkgver=git
-pkgrel=9
+pkgrel=10
 pkgdesc="Axum Website"
 url="http://192.168.0.9/"
 arch=(i686)
@@ -59,4 +59,3 @@ build() {
 #  install -m 755 -d "$pkgdir/var/lib/axum/dsp"
 #  install -m 644 -t "$pkgdir/var/lib/axum/dsp" *
 }
-
