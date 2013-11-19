@@ -1,6 +1,6 @@
 pkgname=oxygen5-processes-rack
 pkgver=git
-pkgrel=19
+pkgrel=21
 pkgdesc="Oxygen 5 Linux Processes for the I/O rack"
 url="http://192.168.0.9/"
 arch=(i686)
